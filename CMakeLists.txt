@@ -26,7 +26,7 @@ add_library(imgui ${IMGUI_PATH}/imgui.cpp
         ${IMGUI_PATH}/examples/imgui_impl_opengl3.cpp)
 target_compile_definitions(imgui PUBLIC -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_include_directories(imgui PUBLIC ${IMGUI_PATH}/ ${IMGUI_PATH}/examples/)
-target_link_libraries(imgui glad)
+target_link_libraries(imgui glad glfw)
 
 
 message(STATUS ${CMAKE_CURRENT_BINARY_DIR})

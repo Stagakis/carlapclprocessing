@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <CarlaImuParser.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -37,8 +38,8 @@ void processInput(GLFWwindow *window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 std::vector<std::string> glob(const std::string& pattern);
 // settings
-const unsigned int SCR_WIDTH = 1920;//1024;
-const unsigned int SCR_HEIGHT = 1080;//768;
+const unsigned int SCR_WIDTH =  1024; // 1920;//
+const unsigned int SCR_HEIGHT = 768; // 1080;//
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
 float lastX = SCR_WIDTH / 2.0f;
@@ -87,7 +88,7 @@ int main()
 
     // glfw window creation
     // --------------------
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL",  glfwGetPrimaryMonitor(), NULL);
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL); // glfwGetPrimaryMonitor(), NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -331,6 +332,8 @@ int main()
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    if (key == GLFW_KEY_ESCAPE || key == -1)
+        glfwSetWindowShouldClose(window, true);
 
     if (key == GLFW_KEY_O && action == GLFW_PRESS) {
         pcl_index = std::max(0, pcl_index - 1);
@@ -384,9 +387,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
 
     if(cameraIsActive) {
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
