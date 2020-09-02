@@ -32,7 +32,7 @@ target_link_libraries(imgui glad glfw)
 message(STATUS ${CMAKE_CURRENT_BINARY_DIR})
 message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(MyOpengl src/main.cpp src/PointCloud.cpp src/CarlaImuParser.cpp)
+add_executable(MyOpengl src/main.cpp src/PointCloud.cpp src/CarlaImuParser.cpp src/Window.cpp)
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)

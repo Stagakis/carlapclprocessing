@@ -18,6 +18,7 @@
 #include <ShaderLoader.h>
 #include <Camera.h>
 #include "PointCloud.h"
+#include "Window.h"
 
 #include <iostream>
 
@@ -34,8 +35,8 @@ glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void processInput(GLFWwindow *window);
 std::vector<std::string> glob(const std::string& pattern);
 // settings
 const unsigned int SCR_WIDTH =  1024; // 1920;//
@@ -60,6 +61,9 @@ glm::vec3 velocity(0.0f);
 CarlaImuParser imu_data;
 int main()
 {
+
+    int success = Window::CreateNewWindow(SCR_WIDTH, SCR_HEIGHT, "MY_WINDOW_CLASS");
+    Window::add_key_callback(GLFW_KEY_T, [](){      camera.Position+=glm::vec3(0,0,10);    });
 
     glm::mat2 test={{2.0f,3.0f},{4.0f,5.0f}};
     glm::vec2 test_vec = {1, 0};
@@ -88,7 +92,9 @@ int main()
 
     // glfw window creation
     // --------------------
+
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL); // glfwGetPrimaryMonitor(), NULL);
+
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -103,6 +109,9 @@ int main()
     // tell GLFW to capture our mouse
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetKeyCallback(window, key_callback);
+
+
+
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -332,6 +341,7 @@ int main()
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    std::cout << mods << std::endl;
     if (key == GLFW_KEY_ESCAPE || key == -1)
         glfwSetWindowShouldClose(window, true);
 
@@ -416,7 +426,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 // -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-
     if(cameraIsActive) {
         if (firstMouse) {
             lastX = xpos;
