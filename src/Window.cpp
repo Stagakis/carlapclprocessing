@@ -11,6 +11,10 @@ int Window::CreateNewWindow(int width, int height, const std::string& windowName
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
+
     window = glfwCreateWindow(width, height, windowName.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
 
     if (window == NULL)
@@ -20,36 +24,31 @@ int Window::CreateNewWindow(int width, int height, const std::string& windowName
         return -1;
     }
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
 
-    // tell GLFW to capture our mouse
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height){glViewport(0, 0, width, height);});
+    glfwSetKeyCallback(window, AllKeyCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetKeyCallback(window, key_callback);
     return 1;
 }
 
-void Window::framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void Window::AllKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    auto func = key_callbacks[key_comb(key, action, mods)];
+    if(func != nullptr) func();
 }
 
-void Window::mouse_callback(GLFWwindow *window, double xpos, double ypos) {
+
+void Window::AddKeyCallback(int key, int action, callback_function func, int mods) {
+    key_callbacks.insert(std::make_pair(key_comb(key, action, mods), func));
+}
+
+bool Window::CheckKey(int key, int state) {
+    return glfwGetKey(window, key) == state;
 
 }
 
-void Window::scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
-
-}
-
-void Window::key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    key_callbacks[key_comb(key,mods)]();
-}
-
-void Window::swap_buffers() {
+void Window::FinishFrame() {
     glfwSwapBuffers(window);
+    glfwPollEvents();
 }
 
-void Window::add_key_callback(int key, callback_function func, int mods) {
-    key_callbacks.insert(std::make_pair(key_comb(key, mods), func));
-}
 
