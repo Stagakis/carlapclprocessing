@@ -32,11 +32,10 @@ glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
                                                  -1.0f,0.0f,0.0f,0.0f,
                                                  0.0f,0.0f,0.0f,1.0f);
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void processInput(GLFWwindow *window);
+void assign_key_callbacks();
+void processInput();
 std::vector<std::string> glob(const std::string& pattern);
 // settings
 const unsigned int SCR_WIDTH =  1024; // 1920;//
@@ -55,63 +54,34 @@ float lastFrame = 0.0f;
 int pcl_index = 1;
 int pcl_list_length = 0;
 glm::mat4 world_to_lidar(1.0f);
-//std::vector<glm::vec3> accel_data;
 glm::vec3 velocity(0.0f);
-//std::vector<float> timestamps;
 CarlaImuParser imu_data;
 int main()
 {
 
-    int success = Window::CreateNewWindow(SCR_WIDTH, SCR_HEIGHT, "MY_WINDOW_CLASS");
-    Window::add_key_callback(GLFW_KEY_T, [](){      camera.Position+=glm::vec3(0,0,10);    });
+    Window::CreateNewWindow(SCR_WIDTH, SCR_HEIGHT, "MY_WINDOW_CLASS");
+    glfwSetCursorPosCallback(Window::window, mouse_callback);
+    glfwSetScrollCallback(Window::window, scroll_callback);
+    assign_key_callbacks();
 
-    glm::mat2 test={{2.0f,3.0f},{4.0f,5.0f}};
-    glm::vec2 test_vec = {1, 0};
-    std::cout << "GLM translation Matrix" <<
-    glm::to_string(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f))) << std::endl;
-    std::cout << "Test_vec" << glm::to_string(test_vec) << std::endl;
-    std::cout << "Test" << glm::to_string(test) << std::endl;
-    std::cout << "Test*Test_vec" << glm::to_string(test*test_vec) << std::endl;
-    std::cout << "Test_vec*Test" << glm::to_string(test_vec*test) << std::endl;
-    std::cout << "How Test is laid out in memory: " << std::endl;
-    for(int i = 0; i< 4 ; i++){
-        std::cout<< *((float *)(&test[0][0]) + i) << " ";
-    }
-    std::cout << std::endl;
 
-    // glfw: initialize and configure
-    // ------------------------------
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    // glfw window creation
-    // --------------------
-
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL); // glfwGetPrimaryMonitor(), NULL);
-
-    if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
+        glm::mat2 test = {{2.0f, 3.0f},
+                          {4.0f, 5.0f}};
+        glm::vec2 test_vec = {1, 0};
+        std::cout << "GLM translation Matrix" <<
+                  glm::to_string(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f))) << std::endl;
+        std::cout << "Test_vec" << glm::to_string(test_vec) << std::endl;
+        std::cout << "Test" << glm::to_string(test) << std::endl;
+        std::cout << "Test*Test_vec" << glm::to_string(test * test_vec) << std::endl;
+        std::cout << "Test_vec*Test" << glm::to_string(test_vec * test) << std::endl;
+        std::cout << "How Test is laid out in memory: " << std::endl;
+        for (int i = 0; i < 4; i++) {
+            std::cout << *((float *) (&test[0][0]) + i) << " ";
+        }
+        std::cout << std::endl;
+
     }
-    glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-
-    // tell GLFW to capture our mouse
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetKeyCallback(window, key_callback);
-
-
-
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -153,7 +123,7 @@ int main()
     //ImGui::StyleColorsClassic();
 
     // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(Window::window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
@@ -168,7 +138,7 @@ int main()
     glm::vec3 hole_center = glm::vec3(0.0f, -2.4f, -18.0f);
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
     glEnable(GL_PROGRAM_POINT_SIZE);
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(Window::window))
     {
 
 
@@ -180,7 +150,7 @@ int main()
 
         // input
         // -----
-        processInput(window);
+        processInput();
 
         // render
         // ------
@@ -259,22 +229,8 @@ int main()
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        /*
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            // calculate the model matrix for each object and pass it to shader before drawing
-            glm::mat4 model = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            ourShader.setMat4("model", model);
-
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-        */
-
         ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
-        //world_to_lidar.operator*=(Carla_to_Opengl_coordinates);
+
         pointcloud_list[pcl_index].draw();
 
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
@@ -327,28 +283,32 @@ int main()
         ourShader.setFloat("hole_depth", hole_depth);
         ourShader.setVec3("hole_center", hole_center);
         ourShader.setVec3("cameraPos", camera.Position);
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+
+        Window::FinishFrame();
     }
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
-    // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    std::cout << mods << std::endl;
-    if (key == GLFW_KEY_ESCAPE || key == -1)
-        glfwSetWindowShouldClose(window, true);
+void assign_key_callbacks(){
 
-    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
-        pcl_index = std::max(0, pcl_index - 1);
-    }
-    if (key == GLFW_KEY_P && action == GLFW_PRESS){
+    Window::AddKeyCallback(GLFW_KEY_GRAVE_ACCENT, GLFW_PRESS, [](){
+        if(glfwGetInputMode(Window::window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
+            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            cameraIsActive = true;
+        }
+        else {
+            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            cameraIsActive = false;
+        }
+    });
+
+    Window::AddKeyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS, [](){glfwSetWindowShouldClose(Window::window, true);});
+
+    Window::AddKeyCallback(GLFW_KEY_O, GLFW_PRESS, [](){pcl_index = std::max(0, pcl_index - 1);});
+
+    Window::AddKeyCallback(GLFW_KEY_P, GLFW_PRESS, [](){
         pcl_index= std::min(pcl_list_length, pcl_index + 1);
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[pcl_index].x, imu_data.accel[pcl_index].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
@@ -357,70 +317,42 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         float dt = imu_data.timestamp[pcl_index] - imu_data.timestamp[pcl_index-1];
         velocity += accel_opengl*dt;
 
-        /*
-        auto manual_mult = glm::vec4(imu_carla_to_opengl_coords[0][0] * accel_carla[0] + imu_carla_to_opengl_coords[1][0] * accel_carla[1] + imu_carla_to_opengl_coords[2][0] * accel_carla[2] + imu_carla_to_opengl_coords[3][0] * accel_carla[3],
-                imu_carla_to_opengl_coords[0][1] * accel_carla[0] + imu_carla_to_opengl_coords[1][1] * accel_carla[1] + imu_carla_to_opengl_coords[2][1] * accel_carla[2] + imu_carla_to_opengl_coords[3][1] * accel_carla[3],
-                imu_carla_to_opengl_coords[0][2] * accel_carla[0] + imu_carla_to_opengl_coords[1][2] * accel_carla[1] + imu_carla_to_opengl_coords[2][2] * accel_carla[2] + imu_carla_to_opengl_coords[3][2] * accel_carla[3],
-                imu_carla_to_opengl_coords[0][3] * accel_carla[0] + imu_carla_to_opengl_coords[1][3] * accel_carla[1] + imu_carla_to_opengl_coords[2][3] * accel_carla[2] + imu_carla_to_opengl_coords[3][3] * accel_carla[3]);
-
-        std::cout << "Imu:Carla->Opengl: " << std::endl << glm::to_string(imu_carla_to_opengl_coords) << std::endl;
-        std::cout << "accel_carla:            " << glm::to_string(accel_carla) << std::endl;
-        std::cout << "accel_opengl:           " << glm::to_string(accel_opengl) << std::endl;
-        std::cout << "imu_carla_to_opengl_coords: " << glm::to_string(imu_carla_to_opengl_coords[0]) << std::endl;
-        std::cout << "accel_opengl(notTrans): " << glm::to_string(imu_carla_to_opengl_coords * accel_carla) << std::endl;
-        std::cout << "ManualMult:             " << glm::to_string(manual_mult) << std::endl;
-        std::cout << "FirstElement:           " << *(float*)(&imu_carla_to_opengl_coords[0]) << std::endl;
-        std::cout << "SecondElement:           " << *(float*)(&imu_carla_to_opengl_coords[0] + 1) << std::endl;
-        std::cout << "Thirdlement:           " << *(float*)(&imu_carla_to_opengl_coords[0] + 2) << std::endl;
-        */
-
         camera.Position += velocity + 0.5f*accel_opengl*(dt*dt);
         world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
 
-    }
+    });
 
-
-    if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS)
-        if(glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    Window::AddKeyCallback(GLFW_KEY_GRAVE_ACCENT, GLFW_PRESS, [](){
+        if(glfwGetInputMode(Window::window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
+            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             cameraIsActive = true;
         }
         else {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             cameraIsActive = false;
         }
+    });
+
 }
-
-
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+void processInput()
 {
 
     if(cameraIsActive) {
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        if (Window::CheckKey(GLFW_KEY_W, GLFW_PRESS))
             camera.ProcessKeyboard(FORWARD, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        if (Window::CheckKey(GLFW_KEY_A, GLFW_PRESS))
             camera.ProcessKeyboard(BACKWARD, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        if (Window::CheckKey(GLFW_KEY_S, GLFW_PRESS))
             camera.ProcessKeyboard(LEFT, deltaTime);
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        if (Window::CheckKey(GLFW_KEY_D, GLFW_PRESS))
             camera.ProcessKeyboard(RIGHT, deltaTime);
     }
 
 
 }
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
@@ -432,14 +364,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
             lastY = ypos;
             firstMouse = false;
         }
-
         float xoffset = xpos - lastX;
         float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 
         lastX = xpos;
         lastY = ypos;
-
-        //std::cout << lastX << " " << lastY << std::endl;
 
         camera.ProcessMouseMovement(xoffset, yoffset);
     }
