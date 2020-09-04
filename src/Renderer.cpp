@@ -24,7 +24,7 @@ void Renderer::MainLoop() {
 
 }
 
-Renderer::Renderer(GLFWwindow *_window, Camera _camera) {
+Renderer::Renderer(GLFWwindow *_window, Camera& _camera) {
     window = _window;
     camera = _camera;
 }

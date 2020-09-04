@@ -9,7 +9,7 @@ class Renderer : IntWindowEventListener {
         GLFWwindow* window;
         Camera camera;
 
-        Renderer(GLFWwindow* _window, Camera _camera);
+        Renderer(GLFWwindow* _window, Camera& _camera);
         void MainLoop();
         void InitializeContext();
         void OnFrameUpdate() override;
