@@ -7,15 +7,16 @@
 
 #include <string>
 #include <vector>
+#include "Drawable.h"
 struct Point{
     float x,y,z;
 };
 
-class PointCloud {
+class PointCloud : Drawable{
     public:
         std::vector<Point> points;
-        unsigned int VBO, VAO;
-        void draw();
+        //unsigned int VBO, VAO;
+        void draw() override;
         explicit PointCloud(std::string filename);
 };
 

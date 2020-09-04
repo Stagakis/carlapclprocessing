@@ -10,7 +10,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/glfw/)
 
 ########### GLAD import code
 set(GLAD_PATH ${CMAKE_CURRENT_SOURCE_DIR}/deps/glad)
-add_library(glad ${GLAD_PATH}/src/glad.c)
+add_library(glad ${GLAD_PATH}/src/glad.c )
 target_include_directories(glad PUBLIC ${GLAD_PATH}/include/)
 
 ########### GLM import code
@@ -37,7 +37,10 @@ add_executable(MyOpengl
         src/PointCloud.cpp
         src/CarlaImuParser.cpp
         src/Window.cpp
-        src/Renderer.cpp src/IntWindowEventListener.cpp include/IntWindowEventListener.h src/Drawable.cpp include/Drawable.h)
+        src/Renderer.cpp
+        src/IntWindowEventListener.cpp
+        src/Drawable.cpp
+        src/WindowEventPublisher.cpp)
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)

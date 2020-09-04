@@ -21,6 +21,7 @@
 #include "Window.h"
 
 #include <iostream>
+#include "WindowEventPublisher.h"
 
 glm::mat4 Carla_to_Opengl_coordinates = glm::mat4(1.0f,0.0f,0.0f,0.0f,
                                                 0.0f,0.0f,1.0f,0.0f,
@@ -56,6 +57,7 @@ int pcl_list_length = 0;
 glm::mat4 world_to_lidar(1.0f);
 glm::vec3 velocity(0.0f);
 CarlaImuParser imu_data;
+
 int main()
 {
 
@@ -65,23 +67,13 @@ int main()
     assign_key_callbacks();
 
 
-    {
-        glm::mat2 test = {{2.0f, 3.0f},
-                          {4.0f, 5.0f}};
-        glm::vec2 test_vec = {1, 0};
-        std::cout << "GLM translation Matrix" <<
-                  glm::to_string(glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, 5.0f, 5.0f))) << std::endl;
-        std::cout << "Test_vec" << glm::to_string(test_vec) << std::endl;
-        std::cout << "Test" << glm::to_string(test) << std::endl;
-        std::cout << "Test*Test_vec" << glm::to_string(test * test_vec) << std::endl;
-        std::cout << "Test_vec*Test" << glm::to_string(test_vec * test) << std::endl;
-        std::cout << "How Test is laid out in memory: " << std::endl;
-        for (int i = 0; i < 4; i++) {
-            std::cout << *((float *) (&test[0][0]) + i) << " ";
-        }
-        std::cout << std::endl;
+    //Window::window->glfwSetKeyCallback(Window::window, winEventPub);
 
-    }
+    glfwSetKeyCallback(Window::window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(key,scancode,action,mods);});
+    WindowEventPublisher::addKeyboardListener((IntWindowEventListener&) camera);
+    //glfwSetCursorPosCallback(Window::window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(xpos,ypos);});
+    //glfwSetScrollCallback(Window::window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(xoffset,yoffset);});
+
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

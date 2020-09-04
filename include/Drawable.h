@@ -7,7 +7,9 @@
 
 
 class Drawable {
-    
+    public:
+        unsigned int VBO = 0, VAO = 0, EBO = 0;
+        virtual void draw() = 0;
 };
 
 

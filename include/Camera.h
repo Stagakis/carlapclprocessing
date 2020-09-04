@@ -6,8 +6,8 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <vector>
+#include <IntWindowEventListener.h>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {
@@ -28,7 +28,7 @@ const float ZOOM        =  70.0f;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
-class Camera
+class Camera : IntWindowEventListener
 {
 public:
     // camera Attributes
@@ -88,6 +88,12 @@ public:
             Position += glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
         if (direction == DOWN)
             Position -= glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
+    }
+
+
+    void OnKeyboardEvent(int key, int scancode, int action, int mods) override
+    {
+        ProcessKeyboard(FORWARD, 1);
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
