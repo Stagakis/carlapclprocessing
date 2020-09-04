@@ -51,5 +51,6 @@ PointCloud::PointCloud(std::string filename) {
 void PointCloud::draw() {
     glPointSize(5.0f);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_POINTS, 0, points.size()*sizeof(float));
+
+    glDrawArrays(GL_POINTS, 0, points.size());
 }

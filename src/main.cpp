@@ -115,6 +115,7 @@ int main()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
+
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -136,35 +137,19 @@ int main()
     bool show_another_window = false;
     float hole_radius = 2.0f, hole_depth = 1.5f;
     glm::vec3 hole_center = glm::vec3(0.0f, -2.4f, -18.0f);
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
     while (!glfwWindowShouldClose(Window::window))
     {
-
-
-        // per-frame time logic
-        // --------------------
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
-        // -----
         processInput();
 
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        //glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        //IMGUI render
-        // Start the Dear ImGui frame
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        //ImGui::SetMouseCursor(ImGuiMouseCursor_None);
 
         // activate shader
         ourShader.use();
@@ -178,22 +163,19 @@ int main()
         ourShader.setMat4("view", view);
 
 
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
         // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
         {
-            static float f = 0.0f;
             static int counter = 0;
 
             ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
             ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
             ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
             ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
 
@@ -212,16 +194,6 @@ int main()
 
             ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
             ImGui::End();
         }
 
@@ -284,7 +256,7 @@ int main()
         ourShader.setVec3("hole_center", hole_center);
         ourShader.setVec3("cameraPos", camera.Position);
 
-        Window::FinishFrame();
+        Window::Update();
     }
 
     glfwTerminate();
@@ -293,7 +265,7 @@ int main()
 
 void assign_key_callbacks(){
 
-    Window::AddKeyCallback(GLFW_KEY_GRAVE_ACCENT, GLFW_PRESS, [](){
+    Window::AddKeyCallback(GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE, [](){
         if(glfwGetInputMode(Window::window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
             glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             cameraIsActive = true;
@@ -322,16 +294,7 @@ void assign_key_callbacks(){
 
     });
 
-    Window::AddKeyCallback(GLFW_KEY_GRAVE_ACCENT, GLFW_PRESS, [](){
-        if(glfwGetInputMode(Window::window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            cameraIsActive = true;
-        }
-        else {
-            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            cameraIsActive = false;
-        }
-    });
+
 
 }
 
@@ -341,14 +304,29 @@ void processInput()
 {
 
     if(cameraIsActive) {
-        if (Window::CheckKey(GLFW_KEY_W, GLFW_PRESS))
+        if(Window::CheckKeyState(GLFW_KEY_LEFT_SHIFT, GLFW_PRESS))
+            camera.MovementSpeed = SPEED * 2;
+        else
+            camera.MovementSpeed = SPEED;
+
+        if (Window::CheckKeyState(GLFW_KEY_W, GLFW_PRESS)) {
             camera.ProcessKeyboard(FORWARD, deltaTime);
-        if (Window::CheckKey(GLFW_KEY_A, GLFW_PRESS))
+        }
+        if (Window::CheckKeyState(GLFW_KEY_S, GLFW_PRESS)) {
             camera.ProcessKeyboard(BACKWARD, deltaTime);
-        if (Window::CheckKey(GLFW_KEY_S, GLFW_PRESS))
+        }
+        if (Window::CheckKeyState(GLFW_KEY_A, GLFW_PRESS)) {
             camera.ProcessKeyboard(LEFT, deltaTime);
-        if (Window::CheckKey(GLFW_KEY_D, GLFW_PRESS))
+        }
+        if (Window::CheckKeyState(GLFW_KEY_D, GLFW_PRESS)){
             camera.ProcessKeyboard(RIGHT, deltaTime);
+        }
+        if (Window::CheckKeyState(GLFW_KEY_E, GLFW_PRESS)){
+            camera.ProcessKeyboard(UP, deltaTime);
+        }
+        if (Window::CheckKeyState(GLFW_KEY_Q, GLFW_PRESS)){
+            camera.ProcessKeyboard(DOWN, deltaTime);
+        }
     }
 
 

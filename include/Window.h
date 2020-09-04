@@ -30,8 +30,8 @@ public:
     static GLFWwindow* window;
     static int CreateNewWindow(int width, int height, const std::string& windowName, bool fullscreen = false);
     static void AddKeyCallback(int key, int action, callback_function func, int mods = 0);
-    static bool CheckKey(int key, int state);
-    static void FinishFrame();
+    static bool CheckKeyState(int key, int state);
+    static void Update();
 
 private:
 
