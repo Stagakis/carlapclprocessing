@@ -41,12 +41,12 @@ void Window::AddKeyCallback(int key, int action, callback_function func, int mod
     key_callbacks.insert(std::make_pair(key_comb(key, action, mods), func));
 }
 
-bool Window::CheckKey(int key, int state) {
+bool Window::CheckKeyState(int key, int state) {
     return glfwGetKey(window, key) == state;
 
 }
 
-void Window::FinishFrame() {
+void Window::Update() {
     glfwSwapBuffers(window);
     glfwPollEvents();
 }
