@@ -36,7 +36,6 @@ add_executable(MyOpengl
         src/main.cpp
         src/PointCloud.cpp
         src/CarlaImuParser.cpp
-        src/Window.cpp
         src/Renderer.cpp
         src/IntWindowEventListener.cpp
         src/Drawable.cpp

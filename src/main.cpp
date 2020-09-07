@@ -18,10 +18,15 @@
 #include <ShaderLoader.h>
 #include <Camera.h>
 #include "PointCloud.h"
-#include "Window.h"
 
 #include <iostream>
 #include "WindowEventPublisher.h"
+
+bool initializeContext(int width, int height, const std::string& windowName,bool fullscreen);
+void imGuiInitialization();
+void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color, const glm::mat4& view);
+void setUpWindowEventHandlers();
+std::vector<std::string> glob(const std::string& pattern);
 
 glm::mat4 Carla_to_Opengl_coordinates = glm::mat4(1.0f,0.0f,0.0f,0.0f,
                                                 0.0f,0.0f,1.0f,0.0f,
@@ -33,44 +38,26 @@ glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
                                                  -1.0f,0.0f,0.0f,0.0f,
                                                  0.0f,0.0f,0.0f,1.0f);
 
-std::vector<std::string> glob(const std::string& pattern);
 // settings
 const unsigned int SCR_WIDTH =  1024; // 1920;//
 const unsigned int SCR_HEIGHT = 768; // 1080;//
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
-
+GLFWwindow* window;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 int pcl_index = 1;
-int pcl_list_length = 0;
 glm::mat4 world_to_lidar(1.0f);
 glm::vec3 velocity(0.0f);
 CarlaImuParser imu_data;
-
 int main()
 {
-    Window::CreateNewWindow(SCR_WIDTH, SCR_HEIGHT, "MY_WINDOW_CLASS");
-
-    glfwSetKeyCallback(Window::window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
-    glfwSetCursorPosCallback(Window::window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
-    glfwSetScrollCallback(Window::window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
-
-    WindowEventPublisher::addKeyboardListener(camera);
-    WindowEventPublisher::addMouseListener(camera);
-    WindowEventPublisher::addScrollListener(camera);
-    WindowEventPublisher::addFrameUpdateListener(camera);
-
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
-
+    if(!initializeContext(SCR_WIDTH, SCR_HEIGHT, std::string("OpenGL"), false)) return -1;
+    setUpWindowEventHandlers();
+    imGuiInitialization();
     glEnable(GL_DEPTH_TEST);
 
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
@@ -80,50 +67,28 @@ int main()
     for(const auto& file : filenames){
         pointcloud_list.emplace_back(file);
     }
-    pcl_list_length = pointcloud_list.size();
-
     PointCloud pcl("../resources/001681.ply");
     imu_data = CarlaImuParser("../resources/imu.txt");
 
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
-
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(Window::window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
-
-    // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
-    // -------------------------------------------------------------------------------------------
     ourShader.use();
 
-    // render loop
-    // -----------
-    bool show_demo_window = true;
-    bool show_another_window = false;
     float hole_radius = 2.0f, hole_depth = 1.5f;
     glm::vec3 hole_center = glm::vec3(0.0f, -2.4f, -18.0f);
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
-    while (!glfwWindowShouldClose(Window::window))
+    while (!glfwWindowShouldClose(window))
     {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
+        
         // activate shader
         ourShader.use();
 
@@ -135,51 +100,19 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-        {
-            static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-
-            ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
-            ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
-
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-            ImGui::Text("FrameNumber = %d", pcl_index);
-            ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
-            ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
-            ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index+1], 1.0f))[0],
-                        (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index + 1 ], 1.0f))[1],
-                        (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index + 1], 1.0f))[2]);
-
-            ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // Rendering
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        imGuiDrawWindow(hole_radius, hole_depth, clear_color, view);
 
         ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
+
+        ourShader.setFloat("hole_radius", hole_radius);
+        ourShader.setFloat("hole_depth", hole_depth);
+        ourShader.setVec3("hole_center", hole_center);
+        ourShader.setVec3("cameraPos", camera.Position);
 
         pointcloud_list[pcl_index].draw();
 
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
-        for(int k = 1; k<pcl_list_length ; k++) {
+        for(int k = 1; k<pointcloud_list.size() ; k++) {
             pcl_index = k;
             glm::vec4 accel_carla = glm::vec4(imu_data.accel[pcl_index].x, imu_data.accel[pcl_index].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
@@ -224,15 +157,13 @@ int main()
         }
         return 0;//*/
 
-        ourShader.setFloat("hole_radius", hole_radius);
-        ourShader.setFloat("hole_depth", hole_depth);
-        ourShader.setVec3("hole_center", hole_center);
-        ourShader.setVec3("cameraPos", camera.Position);
-
-        Window::Update();
-        WindowEventPublisher::notifyFrameUpdate(Window::window, deltaTime);
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwPollEvents();
+        WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
+        glfwSwapBuffers(window);
     }
-
     glfwTerminate();
     return 0;
 }
@@ -265,4 +196,99 @@ std::vector<std::string> glob(const std::string& pattern) {
 
     // done
     return filenames;
+}
+
+void imGuiInitialization(){
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+}
+
+void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4& clear_color, const glm::mat4& view){
+    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+
+    static int counter = 0;
+
+    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+    ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
+    ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
+
+    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        counter++;
+    ImGui::SameLine();
+    ImGui::Text("counter = %d", counter);
+    ImGui::Text("FrameNumber = %d", pcl_index);
+    ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
+    ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
+    ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index+1], 1.0f))[0],
+                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index + 1 ], 1.0f))[1],
+                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index + 1], 1.0f))[2]);
+
+    ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+
+}
+
+void setUpWindowEventHandlers(){
+    //Camera
+    WindowEventPublisher::addKeyboardListener(camera);
+    WindowEventPublisher::addMouseListener(camera);
+    WindowEventPublisher::addScrollListener(camera);
+    WindowEventPublisher::addFrameUpdateListener(camera);
+
+}
+
+bool initializeContext(int width, int height, const std::string& windowName,bool fullscreen){
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    #ifdef __APPLE__
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    #endif
+
+    window = glfwCreateWindow(width, height, windowName.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return false;
+    }
+    glfwMakeContextCurrent(window);
+
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height){glViewport(0, 0, width, height);});
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return false;
+    }
+    //Window::CreateNewWindow(width, height, windowName, false);
+    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
+    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
+
+    return true;
 }
