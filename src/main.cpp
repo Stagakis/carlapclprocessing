@@ -33,20 +33,13 @@ glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
                                                  -1.0f,0.0f,0.0f,0.0f,
                                                  0.0f,0.0f,0.0f,1.0f);
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void assign_key_callbacks();
-void processInput();
 std::vector<std::string> glob(const std::string& pattern);
 // settings
 const unsigned int SCR_WIDTH =  1024; // 1920;//
 const unsigned int SCR_HEIGHT = 768; // 1080;//
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
-bool firstMouse = true;
-bool cameraIsActive = true;
+
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -60,34 +53,26 @@ CarlaImuParser imu_data;
 
 int main()
 {
-
     Window::CreateNewWindow(SCR_WIDTH, SCR_HEIGHT, "MY_WINDOW_CLASS");
-    glfwSetCursorPosCallback(Window::window, mouse_callback);
-    glfwSetScrollCallback(Window::window, scroll_callback);
-    assign_key_callbacks();
+
+    glfwSetKeyCallback(Window::window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
+    glfwSetCursorPosCallback(Window::window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
+    glfwSetScrollCallback(Window::window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
+
+    WindowEventPublisher::addKeyboardListener(camera);
+    WindowEventPublisher::addMouseListener(camera);
+    WindowEventPublisher::addScrollListener(camera);
+    WindowEventPublisher::addFrameUpdateListener(camera);
 
 
-    //Window::window->glfwSetKeyCallback(Window::window, winEventPub);
-
-    glfwSetKeyCallback(Window::window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(key,scancode,action,mods);});
-    WindowEventPublisher::addKeyboardListener((IntWindowEventListener&) camera);
-    //glfwSetCursorPosCallback(Window::window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(xpos,ypos);});
-    //glfwSetScrollCallback(Window::window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(xoffset,yoffset);});
-
-    // glad: load all OpenGL function pointers
-    // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-    // configure global opengl state
-    // -----------------------------
     glEnable(GL_DEPTH_TEST);
 
-    // build and compile our shader zprogram
-    // ------------------------------------
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
 
     auto filenames = glob("../resources/*.ply");
@@ -100,8 +85,6 @@ int main()
     PointCloud pcl("../resources/001681.ply");
     imu_data = CarlaImuParser("../resources/imu.txt");
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
-    // ------------------------------------------------------------------
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -136,8 +119,6 @@ int main()
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        processInput();
 
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -249,106 +230,11 @@ int main()
         ourShader.setVec3("cameraPos", camera.Position);
 
         Window::Update();
+        WindowEventPublisher::notifyFrameUpdate(Window::window, deltaTime);
     }
 
     glfwTerminate();
     return 0;
-}
-
-void assign_key_callbacks(){
-
-    Window::AddKeyCallback(GLFW_KEY_GRAVE_ACCENT, GLFW_RELEASE, [](){
-        if(glfwGetInputMode(Window::window, GLFW_CURSOR) == GLFW_CURSOR_NORMAL) {
-            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            cameraIsActive = true;
-        }
-        else {
-            glfwSetInputMode(Window::window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            cameraIsActive = false;
-        }
-    });
-
-    Window::AddKeyCallback(GLFW_KEY_ESCAPE, GLFW_PRESS, [](){glfwSetWindowShouldClose(Window::window, true);});
-
-    Window::AddKeyCallback(GLFW_KEY_O, GLFW_PRESS, [](){pcl_index = std::max(0, pcl_index - 1);});
-
-    Window::AddKeyCallback(GLFW_KEY_P, GLFW_PRESS, [](){
-        pcl_index= std::min(pcl_list_length, pcl_index + 1);
-        glm::vec4 accel_carla = glm::vec4(imu_data.accel[pcl_index].x, imu_data.accel[pcl_index].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
-
-        glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
-
-        float dt = imu_data.timestamp[pcl_index] - imu_data.timestamp[pcl_index-1];
-        velocity += accel_opengl*dt;
-
-        camera.Position += velocity + 0.5f*accel_opengl*(dt*dt);
-        world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
-
-    });
-
-
-
-}
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput()
-{
-
-    if(cameraIsActive) {
-        if(Window::CheckKeyState(GLFW_KEY_LEFT_SHIFT, GLFW_PRESS))
-            camera.MovementSpeed = SPEED * 2;
-        else
-            camera.MovementSpeed = SPEED;
-
-        if (Window::CheckKeyState(GLFW_KEY_W, GLFW_PRESS)) {
-            camera.ProcessKeyboard(FORWARD, deltaTime);
-        }
-        if (Window::CheckKeyState(GLFW_KEY_S, GLFW_PRESS)) {
-            camera.ProcessKeyboard(BACKWARD, deltaTime);
-        }
-        if (Window::CheckKeyState(GLFW_KEY_A, GLFW_PRESS)) {
-            camera.ProcessKeyboard(LEFT, deltaTime);
-        }
-        if (Window::CheckKeyState(GLFW_KEY_D, GLFW_PRESS)){
-            camera.ProcessKeyboard(RIGHT, deltaTime);
-        }
-        if (Window::CheckKeyState(GLFW_KEY_E, GLFW_PRESS)){
-            camera.ProcessKeyboard(UP, deltaTime);
-        }
-        if (Window::CheckKeyState(GLFW_KEY_Q, GLFW_PRESS)){
-            camera.ProcessKeyboard(DOWN, deltaTime);
-        }
-    }
-
-
-}
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    if(cameraIsActive) {
-        if (firstMouse) {
-            lastX = xpos;
-            lastY = ypos;
-            firstMouse = false;
-        }
-        float xoffset = xpos - lastX;
-        float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-        lastX = xpos;
-        lastY = ypos;
-
-        camera.ProcessMouseMovement(xoffset, yoffset);
-    }
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.ProcessMouseScroll(yoffset);
 }
 
 

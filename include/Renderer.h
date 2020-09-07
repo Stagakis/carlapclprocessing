@@ -12,10 +12,10 @@ class Renderer : IntWindowEventListener {
         Renderer(GLFWwindow* _window, Camera& _camera);
         void MainLoop();
         void InitializeContext();
-        void OnFrameUpdate() override;
-        void OnKeyboardEvent(int key, int scancode, int action, int mods) override;
-        void OnMouseEvent(double xpos, double ypos) override;
-        void OnScrollEvent(double xoffset, double yoffset) override;
+        void OnFrameUpdate(GLFWwindow* window, float deltaTime) override;
+        void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
+        void OnMouseEvent(GLFWwindow* window, double xpos, double ypos) override;
+        void OnScrollEvent(GLFWwindow* window, double xoffset, double yoffset) override;
 };
 
 

@@ -1,7 +1,3 @@
-//
-// Created by stagakis on 4/9/20.
-//
-
 #ifndef MYOPENGL_INTWINDOWEVENTLISTENER_H
 #define MYOPENGL_INTWINDOWEVENTLISTENER_H
 
@@ -10,10 +6,10 @@
 
 class IntWindowEventListener {
     public:
-        virtual void OnKeyboardEvent(int key, int scancode, int action, int mods) {};
-        virtual void OnMouseEvent(double xpos, double ypos) {};
-        virtual void OnScrollEvent(double xoffset, double yoffset) {};
-        virtual void OnFrameUpdate() {};
+        virtual void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) {};
+        virtual void OnMouseEvent(GLFWwindow* window, double xpos, double ypos) {};
+        virtual void OnScrollEvent(GLFWwindow* window, double xoffset, double yoffset) {};
+        virtual void OnFrameUpdate(GLFWwindow* window, float deltaTime) {};
 };
 
 
