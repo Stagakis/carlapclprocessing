@@ -86,25 +86,29 @@ void Camera::OnMouseEvent(GLFWwindow* window, double xpos, double ypos) {
 }
 
 void Camera::OnFrameUpdate(GLFWwindow* window, float deltaTime) {
-    float velocity = MovementSpeed * deltaTime;
+    if(glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        MovementSpeed = 3*SPEED;
+    else
+        MovementSpeed = SPEED;
+    float displacement = MovementSpeed * deltaTime;
 
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        Position += Front * velocity;
+        Position += Front * displacement;
     }
     if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        Position -= Right * velocity;
+        Position -= Right * displacement;
     }
     if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        Position -= Front * velocity;
+        Position -= Front * displacement;
     }
     if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        Position += Right * velocity;
+        Position += Right * displacement;
     }
     if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
-        Position += glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
+        Position += glm::vec3(0.0f, 1.0f, 0.0f) * displacement;
     }
     if(glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
-        Position -= glm::vec3(0.0f, 1.0f, 0.0f) * velocity;
+        Position -= glm::vec3(0.0f, 1.0f, 0.0f) * displacement;
     }
 
 }
