@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <CarlaImuParser.h>
-
+#include "Window.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -23,7 +23,7 @@
 #include "WindowEventPublisher.h"
 
 bool initializeContext(int width, int height, const std::string& windowName,bool fullscreen);
-void imGuiInitialization();
+void initializeImGui();
 void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color, const glm::mat4& view);
 void setUpWindowEventHandlers();
 std::vector<std::string> glob(const std::string& pattern);
@@ -39,6 +39,12 @@ glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
                                                  0.0f,0.0f,0.0f,1.0f);
 
 // settings
+struct Hole{
+    glm::vec3 center;
+    float radius, depth;
+};
+
+Hole basic_hole;
 const unsigned int SCR_WIDTH =  1024; // 1920;//
 const unsigned int SCR_HEIGHT = 768; // 1080;//
 // camera
@@ -57,7 +63,7 @@ int main()
 {
     if(!initializeContext(SCR_WIDTH, SCR_HEIGHT, std::string("OpenGL"), false)) return -1;
     setUpWindowEventHandlers();
-    imGuiInitialization();
+    initializeImGui();
     glEnable(GL_DEPTH_TEST);
 
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
@@ -72,8 +78,11 @@ int main()
 
     ourShader.use();
 
-    float hole_radius = 2.0f, hole_depth = 1.5f;
-    glm::vec3 hole_center = glm::vec3(0.0f, -2.4f, -18.0f);
+
+    basic_hole.radius = 2.0f;
+    basic_hole.depth = 1.5;
+    basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
+
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
     while (!glfwWindowShouldClose(window))
@@ -100,13 +109,13 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
-        imGuiDrawWindow(hole_radius, hole_depth, clear_color, view);
+        imGuiDrawWindow(basic_hole.radius, basic_hole.depth, clear_color, view);
 
         ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
 
-        ourShader.setFloat("hole_radius", hole_radius);
-        ourShader.setFloat("hole_depth", hole_depth);
-        ourShader.setVec3("hole_center", hole_center);
+        ourShader.setFloat("hole_radius", basic_hole.radius);
+        ourShader.setFloat("hole_depth", basic_hole.depth);
+        ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
 
         pointcloud_list[pcl_index].draw();
@@ -198,7 +207,7 @@ std::vector<std::string> glob(const std::string& pattern) {
     return filenames;
 }
 
-void imGuiInitialization(){
+void initializeImGui(){
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -257,38 +266,14 @@ void setUpWindowEventHandlers(){
 }
 
 bool initializeContext(int width, int height, const std::string& windowName,bool fullscreen){
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    auto myWinClass = new Window(width, height, windowName, fullscreen);
+    window = myWinClass->GetGLFWwindowPtr();
 
-    #ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
-
-    window = glfwCreateWindow(width, height, windowName.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
-
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return false;
-    }
-    glfwMakeContextCurrent(window);
-
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height){glViewport(0, 0, width, height);});
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return false;
-    }
-    //Window::CreateNewWindow(width, height, windowName, false);
     glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
+
+    WindowEventPublisher::addKeyboardListener(*myWinClass);
 
     return true;
 }

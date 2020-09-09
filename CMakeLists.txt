@@ -36,10 +36,9 @@ add_executable(MyOpengl
         src/main.cpp
         src/PointCloud.cpp
         src/CarlaImuParser.cpp
-        src/Renderer.cpp
         src/IntWindowEventListener.cpp
         src/Drawable.cpp
-        src/WindowEventPublisher.cpp src/Camera.cpp)
+        src/WindowEventPublisher.cpp src/Camera.cpp src/Window.cpp)
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)
