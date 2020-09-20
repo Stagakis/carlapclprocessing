@@ -1,12 +1,12 @@
-#include "Window.h"
+#include "WindowHandler.h"
 #include <iostream>
 
 
-GLFWwindow *Window::GetGLFWwindowPtr() {
+GLFWwindow *WindowHandler::GetGLFWwindowPtr() {
     return window;
 }
 
-Window::Window(int width, int height, const std::string &windowName, bool fullscreen) {
+WindowHandler::WindowHandler(int width, int height, const std::string &windowName, bool fullscreen) {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -41,7 +41,7 @@ Window::Window(int width, int height, const std::string &windowName, bool fullsc
     this->window = window;
 }
 
-void Window::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void WindowHandler::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if(glfwGetKey(window,GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }

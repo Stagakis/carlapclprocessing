@@ -1,7 +1,7 @@
 #ifndef MYOPENGL_WINDOWEVENTPUBLISHER_H
 #define MYOPENGL_WINDOWEVENTPUBLISHER_H
 
-#include "IntWindowEventListener.h"
+#include "IWindowEventListener.h"
 #include <vector>
 #include <iostream>
 
@@ -14,16 +14,16 @@ public:
 
     static void notifyFrameUpdate(GLFWwindow* window, float deltaTime);
 
-    static void addKeyboardListener(IntWindowEventListener& listener);
-    static void addFrameUpdateListener(IntWindowEventListener& listener);
-    static void addMouseListener(IntWindowEventListener&  listener);
-    static void addScrollListener(IntWindowEventListener&  listener);
+    static void addKeyboardListener(IWindowEventListener& listener);
+    static void addFrameUpdateListener(IWindowEventListener& listener);
+    static void addMouseListener(IWindowEventListener&  listener);
+    static void addScrollListener(IWindowEventListener&  listener);
 
 private:
-    static std::vector<IntWindowEventListener*> keyboardListeners;
-    static std::vector<IntWindowEventListener*> frameUpdateListeners;
-    static std::vector<IntWindowEventListener*> mouseListeners;
-    static std::vector<IntWindowEventListener*> scrollListeners;
+    static std::vector<IWindowEventListener*> keyboardListeners;
+    static std::vector<IWindowEventListener*> frameUpdateListeners;
+    static std::vector<IWindowEventListener*> mouseListeners;
+    static std::vector<IWindowEventListener*> scrollListeners;
 
 };
 

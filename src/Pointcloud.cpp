@@ -2,7 +2,7 @@
 // Created by stagakis on 21/8/20.
 //
 
-#include "PointCloud.h"
+#include "Pointcloud.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -12,7 +12,7 @@
 using namespace std;
 
 
-PointCloud::PointCloud(std::string filename) {
+Pointcloud::Pointcloud(std::string filename) {
 
     ifstream myfile;
     myfile.open(filename);
@@ -48,7 +48,7 @@ PointCloud::PointCloud(std::string filename) {
     myfile.close();
 }
 
-void PointCloud::draw() {
+void Pointcloud::draw() {
     glPointSize(5.0f);
     glBindVertexArray(VAO);
 

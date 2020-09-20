@@ -6,7 +6,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <CarlaImuParser.h>
-#include "Window.h"
+#include "WindowHandler.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -17,10 +17,12 @@
 
 #include <ShaderLoader.h>
 #include <Camera.h>
-#include "PointCloud.h"
+#include "PointcloudHandler.h"
 
 #include <iostream>
 #include "WindowEventPublisher.h"
+
+
 
 bool initializeContext(int width, int height, const std::string& windowName,bool fullscreen);
 void initializeImGui();
@@ -47,9 +49,11 @@ struct Hole{
 Hole basic_hole;
 const unsigned int SCR_WIDTH =  1024; // 1920;//
 const unsigned int SCR_HEIGHT = 768; // 1080;//
+
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
 GLFWwindow* window;
+WindowHandler* winHandler;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -61,27 +65,37 @@ glm::vec3 velocity(0.0f);
 CarlaImuParser imu_data;
 int main()
 {
+    basic_hole.radius = 2.0f;
+    basic_hole.depth = 1.5;
+    basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
+
     if(!initializeContext(SCR_WIDTH, SCR_HEIGHT, std::string("OpenGL"), false)) return -1;
     setUpWindowEventHandlers();
     initializeImGui();
     glEnable(GL_DEPTH_TEST);
-
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
 
-    auto filenames = glob("../resources/*.ply");
-    std::vector<PointCloud> pointcloud_list;
-    for(const auto& file : filenames){
-        pointcloud_list.emplace_back(file);
-    }
-    PointCloud pcl("../resources/001681.ply");
     imu_data = CarlaImuParser("../resources/imu.txt");
+    std::vector<Pointcloud> pointcloud_list;
+    for(const auto& file : glob("../resources/*.ply"))
+        pointcloud_list.emplace_back(file);
+    PointcloudHandler pclHand(pointcloud_list);
+
+    pclHand.pclList[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
+    for(int i = 1 ; i<pclHand.pclList.size(); i++){
+        glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
+
+        glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
+
+        float dt = imu_data.timestamp[i] - imu_data.timestamp[i-1];
+        velocity += accel_opengl*dt;
+        world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
+        pclHand.pclList[i].model =  world_to_lidar*Carla_to_Opengl_coordinates;
+    }
+    WindowEventPublisher::addKeyboardListener(pclHand);
+
 
     ourShader.use();
-
-
-    basic_hole.radius = 2.0f;
-    basic_hole.depth = 1.5;
-    basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
 
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -111,14 +125,17 @@ int main()
 
         imGuiDrawWindow(basic_hole.radius, basic_hole.depth, clear_color, view);
 
-        ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
+        //ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
+
+        ourShader.setMat4("model", pclHand.pclList[pclHand.index].model);
+        pclHand.pclList[pclHand.index].draw();
 
         ourShader.setFloat("hole_radius", basic_hole.radius);
         ourShader.setFloat("hole_depth", basic_hole.depth);
         ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
 
-        pointcloud_list[pcl_index].draw();
+        //pointcloud_list[pcl_index].draw();
 
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
         for(int k = 1; k<pointcloud_list.size() ; k++) {
@@ -266,14 +283,14 @@ void setUpWindowEventHandlers(){
 }
 
 bool initializeContext(int width, int height, const std::string& windowName,bool fullscreen){
-    auto myWinClass = new Window(width, height, windowName, fullscreen);
-    window = myWinClass->GetGLFWwindowPtr();
+    winHandler = new WindowHandler(width, height, windowName, fullscreen);
+    window = winHandler->GetGLFWwindowPtr();
 
     glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
 
-    WindowEventPublisher::addKeyboardListener(*myWinClass);
+    WindowEventPublisher::addKeyboardListener(*winHandler);
 
     return true;
 }
