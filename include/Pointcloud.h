@@ -12,12 +12,12 @@ struct Point{
     float x,y,z;
 };
 
-class PointCloud : Drawable{
+class Pointcloud : public Drawable{
     public:
         std::vector<Point> points;
-        //unsigned int VBO, VAO;
+
         void draw() override;
-        explicit PointCloud(std::string filename);
+        explicit Pointcloud(std::string filename);
 };
 
 

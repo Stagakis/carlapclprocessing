@@ -1,26 +1,26 @@
 #include "WindowEventPublisher.h"
 
-std::vector<IntWindowEventListener*> WindowEventPublisher::keyboardListeners = std::vector<IntWindowEventListener*>();
-std::vector<IntWindowEventListener*> WindowEventPublisher::mouseListeners = std::vector<IntWindowEventListener*>();
-std::vector<IntWindowEventListener*> WindowEventPublisher::scrollListeners = std::vector<IntWindowEventListener*>();
-std::vector<IntWindowEventListener*> WindowEventPublisher::frameUpdateListeners = std::vector<IntWindowEventListener*>();
+std::vector<IWindowEventListener*> WindowEventPublisher::keyboardListeners = std::vector<IWindowEventListener*>();
+std::vector<IWindowEventListener*> WindowEventPublisher::mouseListeners = std::vector<IWindowEventListener*>();
+std::vector<IWindowEventListener*> WindowEventPublisher::scrollListeners = std::vector<IWindowEventListener*>();
+std::vector<IWindowEventListener*> WindowEventPublisher::frameUpdateListeners = std::vector<IWindowEventListener*>();
 
 
 //*//
-void WindowEventPublisher::addKeyboardListener(IntWindowEventListener& listener) {
+void WindowEventPublisher::addKeyboardListener(IWindowEventListener& listener) {
     keyboardListeners.push_back(&listener);
 }
 //*/
 
-void WindowEventPublisher::addMouseListener(IntWindowEventListener&  listener) {
+void WindowEventPublisher::addMouseListener(IWindowEventListener&  listener) {
     mouseListeners.push_back(&listener);
 }
 
-void WindowEventPublisher::addScrollListener(IntWindowEventListener&  listener) {
+void WindowEventPublisher::addScrollListener(IWindowEventListener&  listener) {
     scrollListeners.push_back(&listener);
 }
 
-void WindowEventPublisher::addFrameUpdateListener(IntWindowEventListener &listener) {
+void WindowEventPublisher::addFrameUpdateListener(IWindowEventListener &listener) {
     frameUpdateListeners.push_back(&listener);
 }
 

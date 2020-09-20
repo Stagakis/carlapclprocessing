@@ -34,11 +34,11 @@ message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(MyOpengl
         src/main.cpp
-        src/PointCloud.cpp
+        src/Pointcloud.cpp
         src/CarlaImuParser.cpp
-        src/IntWindowEventListener.cpp
-        src/Drawable.cpp
-        src/WindowEventPublisher.cpp src/Camera.cpp src/Window.cpp)
+        src/WindowEventPublisher.cpp
+        src/Camera.cpp
+        src/WindowHandler.cpp src/PointcloudHandler.cpp include/PointcloudHandler.h)
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)

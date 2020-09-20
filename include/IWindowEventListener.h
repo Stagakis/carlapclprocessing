@@ -1,10 +1,10 @@
-#ifndef MYOPENGL_INTWINDOWEVENTLISTENER_H
-#define MYOPENGL_INTWINDOWEVENTLISTENER_H
+#ifndef MYOPENGL_IWINDOWEVENTLISTENER_H
+#define MYOPENGL_IWINDOWEVENTLISTENER_H
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-class IntWindowEventListener {
+class IWindowEventListener {
     public:
         virtual void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) {};
         virtual void OnMouseEvent(GLFWwindow* window, double xpos, double ypos) {};
@@ -13,4 +13,4 @@ class IntWindowEventListener {
 };
 
 
-#endif //MYOPENGL_INTWINDOWEVENTLISTENER_H
+#endif //MYOPENGL_IWINDOWEVENTLISTENER_H
