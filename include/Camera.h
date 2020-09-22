@@ -9,17 +9,7 @@
 #include <vector>
 #include <IWindowEventListener.h>
 #include <iostream>
-
-// Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
-enum Camera_Movement {
-    FORWARD,
-    BACKWARD,
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN
-};
-
+#include "Drawable.h"
 // Default camera values
 const float YAW         = -90.0f;
 const float PITCH       =  0.0f;
@@ -54,7 +44,9 @@ public:
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 GetViewMatrix() const;
+    glm::mat4 GetViewMatrix();
+
+    void SetFollowingObject(Drawable& _obj);
 
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
 
@@ -68,6 +60,8 @@ public:
 private:
 
     // calculates the front vector from the Camera's (updated) Euler Angles
+
+    Drawable * obj = nullptr;
     void updateCameraVectors();
 };
 #endif
