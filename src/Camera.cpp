@@ -3,7 +3,6 @@
 Camera::Camera(glm::vec3 position, glm::vec3 up , float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
     Position = position;
-    Position = glm::vec3(1.0f, 1.0f, 1.0f);
     WorldUp = up;
     Yaw = yaw;
     Pitch = pitch;
@@ -21,8 +20,10 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 
 glm::mat4 Camera::GetViewMatrix()
 {
-    if(obj)
+    if(following){
         Position = glm::vec3(obj->model[3][0],obj->model[3][1],obj->model[3][2]);
+        //std::cout << "Pos: " << Position[0] << " " << Position[1] << " " << Position[2] << std::endl;
+    }
     return glm::lookAt(Position, Position + Front, Up);
 }
 
@@ -116,6 +117,6 @@ void Camera::OnFrameUpdate(GLFWwindow* window, float deltaTime) {
 
 }
 
-void Camera::SetFollowingObject(Drawable& _obj) {
-    obj = &_obj;
+void Camera::SetFollowingObject(Drawable* _obj) {
+    obj = _obj;
 }

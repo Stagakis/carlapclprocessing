@@ -5,6 +5,7 @@
 #include "Pointcloud.h"
 class PointcloudHandler: public IWindowEventListener {
 public:
+    PointcloudHandler();
     std::vector<Pointcloud> pclList;
     size_t index;
     explicit PointcloudHandler(std::vector<Pointcloud>& _pclList, int _index = 0);
