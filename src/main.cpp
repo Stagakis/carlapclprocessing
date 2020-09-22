@@ -120,6 +120,7 @@ int main()
         ourShader.setMat4("projection", projection);
 
         // camera/view transformation
+        camera.SetFollowingObject(pclHand.pclList[pclHand.index]);
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
