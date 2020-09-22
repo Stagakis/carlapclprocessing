@@ -29,6 +29,7 @@ public:
     glm::vec3 Right{};
     glm::vec3 WorldUp{};
     bool cameraIsActive = true;
+    bool following = false;
 
     // euler Angles
     float Yaw;
@@ -46,7 +47,7 @@ public:
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix();
 
-    void SetFollowingObject(Drawable& _obj);
+    void SetFollowingObject(Drawable* _obj);
 
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
 

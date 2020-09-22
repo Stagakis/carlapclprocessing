@@ -16,3 +16,7 @@ void PointcloudHandler::OnKeyboardEvent(GLFWwindow *window, int key, int scancod
 void PointcloudHandler::draw() {
     pclList[index].draw();
 }
+
+PointcloudHandler::PointcloudHandler() {
+
+}
