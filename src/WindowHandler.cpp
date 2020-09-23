@@ -29,7 +29,7 @@ WindowHandler::WindowHandler(int width, int height, const std::string &windowNam
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height){glViewport(0, 0, width, height);});
 
 
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

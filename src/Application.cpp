@@ -2,24 +2,79 @@
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
 #include "PointcloudHandler.h"
-
+#include "helpers.h"
 
 int Application::AppMain() {
     basic_hole.radius = 2.0f;
     basic_hole.depth = 1.5;
     basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
+    stbi_set_flip_vertically_on_load(true);
+
+    GLuint quadVBO, quadVAO, EBO;
+    glGenBuffers(1, &quadVBO);
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &EBO);
+    glBindVertexArray(quadVAO);
+
+    float quad[] = {
+            // positions          // texture coords
+            1.0f,  1.0f, 0.0f,    1.0f, 1.0f, // top right
+            1.0f, -1.0f, 0.0f,    1.0f, 0.0f, // bottom right
+            -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+            -1.0f,  1.0f, 0.0f,   0.0f, 1.0f  // top left
+    };
+    unsigned int indices[] = {
+            0, 1, 3, // first triangle
+            1, 2, 3  // second triangle
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glEnable(GL_DEPTH_TEST);
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
-
+    ourShader.setInt("texture0",0);
     imu_data = CarlaImuParser("../resources/imu.txt");
     std::vector<Pointcloud> pointcloud_list;
-    for(const auto& file : glob("../resources/*.ply"))
-        pointcloud_list.emplace_back(file);
+
+    auto files = glob("../resources/*.ply");
+
+    textures = std::vector<GLuint>(files.size());
+    size_t local_petros = files.size();
+    glGenTextures(local_petros,  &textures[0]);
+
+    for(size_t i = 0; i < files.size(); i++) {
+        pointcloud_list.emplace_back(files[i]);
+
+        glBindTexture(GL_TEXTURE_2D, textures[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        int width, height, nrChannels;
+        unsigned char *data = stbi_load( (files[i].substr(0, files[i].size() - 4) + ".png").c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+        else
+        {
+            std::cout << "Failed to load texture" << std::endl;
+        }
+        stbi_image_free(data);
+    }
     pclHand = PointcloudHandler(pointcloud_list);
 
     pclHand.pclList[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
-    for(int i = 1 ; i<pclHand.pclList.size(); i++){
+    for(size_t i = 1 ; i < pclHand.pclList.size(); i++){
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
         glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
@@ -39,6 +94,7 @@ int Application::AppMain() {
     {
         camera.SetFollowingObject(&pclHand.pclList[pclHand.index]);
 
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -54,6 +110,7 @@ int Application::AppMain() {
         // activate shader
         ourShader.use();
 
+
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
@@ -62,6 +119,18 @@ int Application::AppMain() {
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
+
+        glBindVertexArray(quadVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textures[pclHand.index]);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // Rendering
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwPollEvents();
+        WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
+        glfwSwapBuffers(window);
+        continue;
 
         //ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
 
@@ -130,7 +199,7 @@ int Application::AppMain() {
     return 0;
 }
 
-bool Application::initializeContext(const std::string &windowName, bool fullscreen) {
+void Application::createWindow(const std::string &windowName, bool fullscreen) {
     winHandler = new WindowHandler(SCR_WIDTH, SCR_HEIGHT, windowName, fullscreen);
     window = winHandler->GetGLFWwindowPtr();
 
@@ -140,10 +209,9 @@ bool Application::initializeContext(const std::string &windowName, bool fullscre
 
     WindowEventPublisher::addKeyboardListener(*winHandler);
 
-    return true;
 }
 
-void Application::initializeImGui() {
+void Application::initializeImGui() const {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -163,40 +231,11 @@ void Application::initializeImGui() {
 
 void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addKeyboardListener(camera);
-    WindowEventPublisher::addKeyboardListener(Application());
+    WindowEventPublisher::addKeyboardListener(*this);
     WindowEventPublisher::addMouseListener(camera);
     WindowEventPublisher::addScrollListener(camera);
     WindowEventPublisher::addFrameUpdateListener(camera);
 
-}
-
-std::vector<std::string> Application::glob(const std::string &pattern) {
-    using namespace std;
-
-    // glob struct resides on the stack
-    glob_t glob_result;
-    memset(&glob_result, 0, sizeof(glob_result));
-
-    // do the glob operation
-    int return_value = ::glob(pattern.c_str(), GLOB_TILDE, NULL, &glob_result);
-    if(return_value != 0) {
-        globfree(&glob_result);
-        stringstream ss;
-        ss << "glob() failed with return_value " << return_value << endl;
-        throw std::runtime_error(ss.str());
-    }
-
-    // collect all the filenames into a std::list<std::string>
-    vector<string> filenames;
-    for(size_t i = 0; i < glob_result.gl_pathc; ++i) {
-        filenames.push_back(string(glob_result.gl_pathv[i]));
-    }
-
-    // cleanup
-    globfree(&glob_result);
-
-    // done
-    return filenames;
 }
 
 void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 &clear_color) {
@@ -212,13 +251,13 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
     auto view = camera.GetViewMatrix();
-    ImGui::SameLine();
-    ImGui::Text("FrameNumber = %d", pcl_index);
+    //ImGui::SameLine();
+    ImGui::Text("FrameNumber = %d", pclHand.index);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
     ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
-    ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index+1], 1.0f))[0],
-                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index + 1 ], 1.0f))[1],
-                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pcl_index + 1], 1.0f))[2]);
+    ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pclHand.index+1], 1.0f))[0],
+                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pclHand.index + 1 ], 1.0f))[1],
+                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pclHand.index + 1], 1.0f))[2]);
 
     ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -233,9 +272,11 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
 
 int main()
 {
+    auto app = Application();
+    app.camera = Camera(glm::vec3(0.0f, 0.0f, 2.0f));
 
-    Application::initializeContext("Test", false);
-    Application::initializeImGui();
-    Application::setUpWindowEventHandlers();
-    return Application::AppMain();
+    app.createWindow("Test", false);
+    app.initializeImGui();
+    app.setUpWindowEventHandlers();
+    return app.AppMain();
 }
