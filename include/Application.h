@@ -16,55 +16,54 @@
 #include "IWindowEventListener.h"
 #include "PointcloudHandler.h"
 
-glm::mat4 Carla_to_Opengl_coordinates = glm::mat4(1.0f,0.0f,0.0f,0.0f,
-                                                  0.0f,0.0f,1.0f,0.0f,
-                                                  0.0f,-1.0f,0.0f,0.0f,
-                                                  0.0f,0.0f,0.0f,1.0f);
-
-glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
-                                                 0.0f,0.0f,1.0f,0.0f,
-                                                 -1.0f,0.0f,0.0f,0.0f,
-                                                 0.0f,0.0f,0.0f,1.0f);
-// settings
-struct Hole{
-    glm::vec3 center;
-    float radius, depth;
-};
-
-Hole basic_hole;
-const unsigned int SCR_WIDTH =  1600; // 1920;//
-const unsigned int SCR_HEIGHT = 900; // 1080;//
-
-// camera
-Camera camera(glm::vec3(0.0f, 0.0f, 2.0f));
-GLFWwindow* window;
-WindowHandler* winHandler;
-PointcloudHandler pclHand = PointcloudHandler();
-
-// timing
-float deltaTime = 0.0f;	// time between current frame and last frame
-float lastFrame = 0.0f;
-
-int pcl_index = 1;
-glm::mat4 world_to_lidar(1.0f);
-glm::vec3 velocity(0.0f);
-CarlaImuParser imu_data;
 
 
 class Application : public IWindowEventListener{
 public:
-    static bool initializeContext(const std::string& windowName,bool fullscreen);
-    static void initializeImGui();
-    static void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color);
-    static void setUpWindowEventHandlers();
-    static std::vector<std::string> glob(const std::string& pattern);
+
+    glm::mat4 Carla_to_Opengl_coordinates = glm::mat4(1.0f,0.0f,0.0f,0.0f,
+                                                      0.0f,0.0f,1.0f,0.0f,
+                                                      0.0f,-1.0f,0.0f,0.0f,
+                                                      0.0f,0.0f,0.0f,1.0f);
+
+    glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
+                                                     0.0f,0.0f,1.0f,0.0f,
+                                                     -1.0f,0.0f,0.0f,0.0f,
+                                                     0.0f,0.0f,0.0f,1.0f);
+    glm::mat4 world_to_lidar = glm::mat4(1.0f);
+    glm::vec3 velocity = glm::vec3(0.0f);
+
+    // settings
+    struct Hole{
+        glm::vec3 center;
+        float radius, depth;
+    };
+    Hole basic_hole;
+
+    const unsigned int SCR_WIDTH =  1600; // 1920;//
+    const unsigned int SCR_HEIGHT = 900; // 1080;//
+    std::vector<GLuint> textures;
+
+    // camera
+    Camera camera;
+    GLFWwindow* window;
+    WindowHandler* winHandler;
+    PointcloudHandler pclHand = PointcloudHandler();
+    CarlaImuParser imu_data;
+
+    // timing
+    float deltaTime = 0.0f;	// time between current frame and last frame
+    float lastFrame = 0.0f;
 
 
-    static void HandleKeyEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
+    void createWindow(const std::string& windowName,bool fullscreen);
+    void initializeImGui() const;
+    void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color);
+    void setUpWindowEventHandlers();
+
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
 
-    static int AppMain();
-
+    int AppMain();
 };
 
 

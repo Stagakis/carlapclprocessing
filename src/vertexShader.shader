@@ -16,7 +16,10 @@ uniform vec3 cameraPos;
 
 void main()
 {
-    fragColor = vec3(1.0f);
+    TexCoord = vec2(aTexCoord.x, aTexCoord.y);
+    gl_Position = vec4(aPos, 1.0f);
+}
+/*    fragColor = vec3(1.0f);
     vec4 world_pos = model*vec4(aPos, 1.0f);
 
 
@@ -41,4 +44,4 @@ void main()
 
     TexCoord = vec2(aTexCoord.x, aTexCoord.y);
 }
-
+*/

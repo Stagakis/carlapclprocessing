@@ -34,7 +34,7 @@ CarlaImuParser::CarlaImuParser(std::string filename) {
                     xyz[j] = stof(data_xyz);
 
                 }
-                if(names[i] == "accelerometer=Vector3D(") accel.push_back(glm::vec3(xyz[0], xyz[1], xyz[2])); //For some reason it gives gravity acceleration
+                if(names[i] == "accelerometer=Vector3D(") accel.push_back(glm::vec3(xyz[0], xyz[1], xyz[2]));
                 if(names[i] == "gyroscope=Vector3D(") gyro.push_back(glm::vec3(xyz[0], xyz[1], xyz[2]));
                 continue;
             }
