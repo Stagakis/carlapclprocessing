@@ -1,5 +1,6 @@
 #ifndef MYOPENGL_APPLICATION_H
 #define MYOPENGL_APPLICATION_H
+#define STB_IMAGE_IMPLEMENTATION
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -8,15 +9,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <CarlaImuParser.h>
-#include "WindowHandler.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
 #include <glm/glm.hpp>
 #include "Camera.h"
 #include "IWindowEventListener.h"
 #include "PointcloudHandler.h"
+#include "ImageDrawable.h"
 
-
+const unsigned int SCR_WIDTH =  1600; // 1920;//
+const unsigned int SCR_HEIGHT = 900; // 1080;//
+const std::string WINDOW_NAME = "CPSoS"; // 1080;//
 
 class Application : public IWindowEventListener{
 public:
@@ -40,24 +41,19 @@ public:
     };
     Hole basic_hole;
 
-    const unsigned int SCR_WIDTH =  1600; // 1920;//
-    const unsigned int SCR_HEIGHT = 900; // 1080;//
     std::vector<GLuint> textures;
 
     // camera
     Camera camera;
     GLFWwindow* window;
-    WindowHandler* winHandler;
     PointcloudHandler pclHand = PointcloudHandler();
+    std::vector<ImageDrawable> images;
     CarlaImuParser imu_data;
 
     // timing
     float deltaTime = 0.0f;	// time between current frame and last frame
     float lastFrame = 0.0f;
 
-
-    void createWindow(const std::string& windowName,bool fullscreen);
-    void initializeImGui() const;
     void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color);
     void setUpWindowEventHandlers();
 

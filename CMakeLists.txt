@@ -38,7 +38,9 @@ add_executable(MyOpengl
         src/CarlaImuParser.cpp
         src/WindowEventPublisher.cpp
         src/Camera.cpp
-        src/WindowHandler.cpp src/PointcloudHandler.cpp src/Application.cpp include/helpers.h)
+        src/PointcloudHandler.cpp
+        src/Application.cpp
+        src/ImageDrawable.cpp)
 
 target_compile_options(MyOpengl PRIVATE -Wall -Wextra -pedantic-errors)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
