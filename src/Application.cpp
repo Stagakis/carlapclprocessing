@@ -2,6 +2,7 @@
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
 #include "PointcloudHandler.h"
+
 #include "helpers.h"
 
 int Application::AppMain() {
@@ -47,8 +48,7 @@ int Application::AppMain() {
     auto files = glob("../resources/*.ply");
 
     textures = std::vector<GLuint>(files.size());
-    size_t local_petros = files.size();
-    glGenTextures(local_petros,  &textures[0]);
+    glGenTextures(files.size(),  &textures[0]);
 
     for(size_t i = 0; i < files.size(); i++) {
         pointcloud_list.emplace_back(files[i]);
@@ -199,34 +199,14 @@ int Application::AppMain() {
     return 0;
 }
 
-void Application::createWindow(const std::string &windowName, bool fullscreen) {
-    winHandler = new WindowHandler(SCR_WIDTH, SCR_HEIGHT, windowName, fullscreen);
-    window = winHandler->GetGLFWwindowPtr();
+void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if(glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
+        camera.following = !camera.following;
+    }
 
-    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
-    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
-
-    WindowEventPublisher::addKeyboardListener(*winHandler);
-
-}
-
-void Application::initializeImGui() const {
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
-
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
+        glfwSetWindowShouldClose(window, true);
+    }
 }
 
 void Application::setUpWindowEventHandlers() {
@@ -235,15 +215,14 @@ void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addMouseListener(camera);
     WindowEventPublisher::addScrollListener(camera);
     WindowEventPublisher::addFrameUpdateListener(camera);
-
 }
 
 void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 &clear_color) {
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
 
-    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+    //ImGui::Text("This is some useful text.");   // Display some text (you can use a format strings too)
 
     ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
     ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
@@ -264,19 +243,42 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::End();
 }
 
-void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if(glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
-        camera.following = !camera.following;
-    }
-}
 
 int main()
 {
     auto app = Application();
+
     app.camera = Camera(glm::vec3(0.0f, 0.0f, 2.0f));
 
-    app.createWindow("Test", false);
-    app.initializeImGui();
+    app.window = createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, "CPSoS", false);
+    if(app.window == NULL) return -1;
+    glfwSetKeyCallback(app.window, [](GLFWwindow* window, int key, int scancode, int action, int mods){ WindowEventPublisher::keyboardCallback(window, key,scancode,action,mods);});
+    glfwSetCursorPosCallback(app.window, [](GLFWwindow* window, double xpos, double ypos){ WindowEventPublisher::mouseCallback(window, xpos, ypos);});
+    glfwSetScrollCallback(app.window, [](GLFWwindow* window, double xoffset, double yoffset){ WindowEventPublisher::scrollCallback(window, xoffset, yoffset);});
+    glfwSetFramebufferSizeCallback(app.window, [](GLFWwindow* window, int width, int height){glViewport(0, 0, width, height);});
+
+    glfwMakeContextCurrent(app.window);
+
+    //glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+
+    // Setup Dear ImGui context /////////////////////
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(app.window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     app.setUpWindowEventHandlers();
     return app.AppMain();
 }

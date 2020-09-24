@@ -3,6 +3,30 @@
 
 #include <vector>
 #include <glob.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
+
+GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen){
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    GLFWwindow *window = glfwCreateWindow(width, height, name.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return NULL;
+    }
+}
+
 
 std::vector<std::string> glob(const std::string &pattern) {
     using namespace std;
