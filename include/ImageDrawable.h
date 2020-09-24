@@ -5,8 +5,9 @@
 
 
 class ImageDrawable : public Drawable {
-    explicit ImageDrawable(std::string filename);
+public:
     void draw() override;
+    explicit ImageDrawable(std::string filename);
 };
 
 

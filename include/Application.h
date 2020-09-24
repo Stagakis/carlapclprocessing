@@ -12,7 +12,7 @@
 #include <glm/glm.hpp>
 #include "Camera.h"
 #include "IWindowEventListener.h"
-#include "PointcloudHandler.h"
+#include "Pointcloud.h"
 #include "ImageDrawable.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
@@ -41,14 +41,16 @@ public:
     };
     Hole basic_hole;
 
-    std::vector<GLuint> textures;
+    //std::vector<GLuint> textures;
 
     // camera
     Camera camera;
     GLFWwindow* window;
-    PointcloudHandler pclHand = PointcloudHandler();
+    //PointcloudHandler pclHand = PointcloudHandler();
     std::vector<ImageDrawable> images;
+    std::vector<Pointcloud> pointclouds;
     CarlaImuParser imu_data;
+    size_t frameIndex=0;
 
     // timing
     float deltaTime = 0.0f;	// time between current frame and last frame
