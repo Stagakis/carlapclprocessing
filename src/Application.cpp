@@ -1,8 +1,6 @@
 #include "Application.h"
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
-#include "PointcloudHandler.h"
-
 #include "helpers.h"
 
 int Application::AppMain() {
@@ -11,70 +9,21 @@ int Application::AppMain() {
     basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
     stbi_set_flip_vertically_on_load(true);
 
-    GLuint quadVBO, quadVAO, EBO;
-    glGenBuffers(1, &quadVBO);
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &EBO);
-    glBindVertexArray(quadVAO);
-
-    float quad[] = {
-            // positions          // texture coords
-            1.0f,  1.0f, 0.0f,    1.0f, 1.0f, // top right
-            1.0f, -1.0f, 0.0f,    1.0f, 0.0f, // bottom right
-            -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-            -1.0f,  1.0f, 0.0f,   0.0f, 1.0f  // top left
-    };
-    unsigned int indices[] = {
-            0, 1, 3, // first triangle
-            1, 2, 3  // second triangle
-    };
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quad), quad, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
 
     glEnable(GL_DEPTH_TEST);
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ourShader.setInt("texture0",0);
     imu_data = CarlaImuParser("../resources/imu.txt");
-    std::vector<Pointcloud> pointcloud_list;
 
     auto files = glob("../resources/*.ply");
 
-    textures = std::vector<GLuint>(files.size());
-    glGenTextures(files.size(),  &textures[0]);
-
     for(size_t i = 0; i < files.size(); i++) {
-        pointcloud_list.emplace_back(files[i]);
-
-        glBindTexture(GL_TEXTURE_2D, textures[i]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        int width, height, nrChannels;
-        unsigned char *data = stbi_load( (files[i].substr(0, files[i].size() - 4) + ".png").c_str(), &width, &height, &nrChannels, 0);
-        if (data)
-        {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-        else
-        {
-            std::cout << "Failed to load texture" << std::endl;
-        }
-        stbi_image_free(data);
+        pointclouds.emplace_back(files[i]);
+        images.emplace_back(std::string(files[i].substr(0, files[i].size() - 4) + ".png"));
     }
-    pclHand = PointcloudHandler(pointcloud_list);
 
-    pclHand.pclList[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
-    for(size_t i = 1 ; i < pclHand.pclList.size(); i++){
+    pointclouds[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
+    for(size_t i = 1 ; i < files.size(); i++){
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
         glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
@@ -82,9 +31,9 @@ int Application::AppMain() {
         float dt = imu_data.timestamp[i] - imu_data.timestamp[i-1];
         velocity += accel_opengl*dt;
         world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
-        pclHand.pclList[i].model =  world_to_lidar*Carla_to_Opengl_coordinates;
+        pointclouds[i].model =  world_to_lidar*Carla_to_Opengl_coordinates;
     }
-    WindowEventPublisher::addKeyboardListener(pclHand);
+    //WindowEventPublisher::addKeyboardListener(pclHand);
 
     ourShader.use();
 
@@ -92,7 +41,7 @@ int Application::AppMain() {
     glEnable(GL_PROGRAM_POINT_SIZE);
     while (!glfwWindowShouldClose(window))
     {
-        camera.SetFollowingObject(&pclHand.pclList[pclHand.index]);
+        camera.SetFollowingObject(&pointclouds[frameIndex]);
 
 
         float currentFrame = glfwGetTime();
@@ -120,22 +69,20 @@ int Application::AppMain() {
         ourShader.setMat4("view", view);
 
 
-        glBindVertexArray(quadVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textures[pclHand.index]);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        images[frameIndex].draw();
         // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwPollEvents();
         WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
         glfwSwapBuffers(window);
+
         continue;
 
         //ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
 
-        ourShader.setMat4("model", pclHand.pclList[pclHand.index].model);
-        pclHand.pclList[pclHand.index].draw();
+        ourShader.setMat4("model", pointclouds[frameIndex].model);
+        pointclouds[frameIndex].draw();
 
         ourShader.setFloat("hole_radius", basic_hole.radius);
         ourShader.setFloat("hole_depth", basic_hole.depth);
@@ -207,6 +154,12 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }
+    if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){
+        frameIndex = std::min(pointclouds.size() - 1, frameIndex + 1);
+    }
+    if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
+        frameIndex = std::max((size_t)0 ,  frameIndex-1);
+    }
 }
 
 void Application::setUpWindowEventHandlers() {
@@ -231,12 +184,12 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
 
     auto view = camera.GetViewMatrix();
     //ImGui::SameLine();
-    ImGui::Text("FrameNumber = %d", pclHand.index);
+    ImGui::Text("FrameNumber = %d", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
     ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
-    ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pclHand.index+1], 1.0f))[0],
-                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pclHand.index + 1 ], 1.0f))[1],
-                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[pclHand.index + 1], 1.0f))[2]);
+    ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[frameIndex], 1.0f))[0],
+                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[frameIndex], 1.0f))[1],
+                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[frameIndex], 1.0f))[2]);
 
     ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

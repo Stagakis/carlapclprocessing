@@ -5,7 +5,9 @@
 #include <glob.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "iostream"
 
+#define LOG(X) std::cout << X << std::endl;
 
 GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen){
     glfwInit();
