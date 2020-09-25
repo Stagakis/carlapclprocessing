@@ -6,29 +6,18 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "iostream"
-
+#include "Pointcloud.h"
 #define LOG(X) std::cout << X << std::endl;
 
-GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen){
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    GLFWwindow *window = glfwCreateWindow(width, height, name.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
-
-    if (window == NULL)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return NULL;
+void save2obj(const std::string filename, std::vector<Point> points){
+    std::ofstream myfile;
+    myfile.open(filename);
+    for(int i = 0 ; i < points.size() ; i++){
+        std::string line = "v " + std::to_string(points[i].x) + " " + std::to_string(points[i].y) + " " + std::to_string(points[i].z) + "\n";
+        myfile.write(line.c_str(), line.size());
     }
+    myfile.close();
 }
-
 
 std::vector<std::string> glob(const std::string &pattern) {
     using namespace std;
@@ -58,5 +47,27 @@ std::vector<std::string> glob(const std::string &pattern) {
     // done
     return filenames;
 }
+
+GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen){
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    GLFWwindow *window = glfwCreateWindow(width, height, name.c_str(), fullscreen ? glfwGetPrimaryMonitor() : NULL, NULL);
+
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return NULL;
+    }
+}
+
+
 
 #endif //MYOPENGL_HELPERS_H
