@@ -4,9 +4,6 @@
 #include "helpers.h"
 
 int Application::AppMain() {
-    basic_hole.radius = 2.0f;
-    basic_hole.depth = 1.5;
-    basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
     stbi_set_flip_vertically_on_load(true);
 
 
@@ -17,9 +14,12 @@ int Application::AppMain() {
 
     auto files = glob("../resources/*.ply");
 
+    int width, height, nrChannels;
     for(size_t i = 0; i < files.size(); i++) {
         pointclouds.emplace_back(files[i]);
         images.emplace_back(std::string(files[i].substr(0, files[i].size() - 4) + ".png"));
+
+        unsigned char *data = stbi_load( std::string(files[i].substr(0, files[i].size() - 4) + ".png").c_str(), &width, &height, &nrChannels, 0);
     }
 
     pointclouds[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
@@ -70,14 +70,7 @@ int Application::AppMain() {
 
 
         images[frameIndex].draw();
-        // Rendering
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwPollEvents();
-        WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
-        glfwSwapBuffers(window);
 
-        continue;
 
         //ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
 
@@ -89,47 +82,72 @@ int Application::AppMain() {
         ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
 
+
+        std::vector<Point> processed_points;
+        for (int i = 0; i < pointclouds[frameIndex].points.size(); i++) {
+            glm::vec3 aPos(pointclouds[frameIndex].points[i].x, pointclouds[frameIndex].points[i].y,
+                           pointclouds[frameIndex].points[i].z);
+            glm::vec4 world_pos = pointclouds[frameIndex].model * glm::vec4(aPos, 1.0f);
+            if (glm::distance(glm::vec3(world_pos), basic_hole.center) <= basic_hole.radius) {
+                std::cout << "BEFORE  " << glm::to_string(world_pos) << std::endl;
+
+                world_pos.y -= basic_hole.depth - (glm::distance(glm::vec3(world_pos), basic_hole.center) / basic_hole.radius) * basic_hole.depth;
+
+                glm::vec3 camera_to_point_ray = glm::vec3(world_pos) - camera.Position;
+                float modifier = (-2.4 - world_pos.y) / camera_to_point_ray.y;
+                glm::vec3 intersection_point = glm::vec3(world_pos) + camera_to_point_ray * modifier;
+
+                //if (distance(intersection_point, basic_hole.center) > basic_hole.radius) continue;
+                std::cout << "AFTER  " << glm::to_string(world_pos) << std::endl;
+            }
+            processed_points.emplace_back(world_pos[0], world_pos[1], world_pos[2]);
+        }
+        save2obj("../resources/carla.obj", processed_points);
+        return 0;
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
-        for(int k = 1; k<pointcloud_list.size() ; k++) {
-            pcl_index = k;
-            glm::vec4 accel_carla = glm::vec4(imu_data.accel[pcl_index].x, imu_data.accel[pcl_index].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
+        for(int k = 1; k<pointclouds.size() ; k++) {
+            frameIndex = k;
+            glm::vec4 accel_carla = glm::vec4(imu_data.accel[frameIndex].x, imu_data.accel[frameIndex].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
             glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
 
-            float dt = imu_data.timestamp[pcl_index] - imu_data.timestamp[pcl_index-1];
+            float dt = imu_data.timestamp[frameIndex] - imu_data.timestamp[frameIndex-1];
             velocity += accel_opengl*dt;
 
             camera.Position += velocity + 0.5f*accel_opengl*(dt*dt);
             world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
             std::ofstream myfile;
-            myfile.open(filenames[k]+".txt");
+            myfile.open(files[k]+"_all.txt");
             myfile.write((glm::to_string(camera.Position) + "\n").c_str(), (glm::to_string(camera.Position) + "\n").length());
 
-            std::cout << filenames[k] << "Has: " << pointcloud_list[pcl_index].points.size() << " points"<< std::endl;
+            std::cout << files[k] << "Has: " << pointclouds[frameIndex].points.size() << " points"<< std::endl;
 
-            for (int i = 0; i < pointcloud_list[pcl_index].points.size(); i++) {
+            for (int i = 0; i < pointclouds[frameIndex].points.size(); i++) {
                 //std::cout << "===" << std::endl;
                 //if(i!=pcl_index) continue;
-                glm::vec3 aPos(pointcloud_list[pcl_index].points[i].x, pointcloud_list[pcl_index].points[i].y,
-                               pointcloud_list[pcl_index].points[i].z);
+                glm::vec3 aPos(pointclouds[frameIndex].points[i].x, pointclouds[frameIndex].points[i].y,
+                               pointclouds[frameIndex].points[i].z);
                 glm::vec4 world_pos = world_to_lidar * Carla_to_Opengl_coordinates * glm::vec4(aPos, 1.0f);
 
 
-                if (glm::distance(glm::vec3(world_pos), hole_center) <= hole_radius) {
-                    //std::cout << glm::to_string(world_pos) << std::endl;
-                    myfile.write((glm::to_string(world_pos) + "\n").c_str(), (glm::to_string(world_pos) + "\n").length());
+                if (glm::distance(glm::vec3(world_pos), basic_hole.center) <= basic_hole.radius) {
+                    std::cout << "BEFORE  " << glm::to_string(world_pos) << std::endl;
 
-                    world_pos.y -=
-                            hole_depth - (glm::distance(glm::vec3(world_pos), hole_center) / hole_radius) * hole_depth;
+                    world_pos.y -= basic_hole.depth - (glm::distance(glm::vec3(world_pos), basic_hole.center) / basic_hole.radius) * basic_hole.depth;
 
 
                     glm::vec3 camera_to_point_ray = glm::vec3(world_pos) - camera.Position;
                     float modifier = (-2.4 - world_pos.y) / camera_to_point_ray.y;
                     //world_pos.y + x*camera_to_point.y = -2.4 => x = (-2.4 -wolrd_pos.y)/camera_to_point.y;
                     glm::vec3 intersection_point = glm::vec3(world_pos) + camera_to_point_ray * modifier;
-                    if (distance(intersection_point, hole_center) > hole_radius) continue;
+                    //myfile.write((glm::to_string(world_pos) + "\n").c_str(), (glm::to_string(world_pos) + "\n").length());
+
+                    if (distance(intersection_point, basic_hole.center) > basic_hole.radius) continue;
+                    std::cout << "AFTER   " << glm::to_string(world_pos) << std::endl;
 
                 }
+                myfile.write((glm::to_string(world_pos) + "\n").c_str(), (glm::to_string(world_pos) + "\n").length());
+
             }
             myfile.close();
         }
@@ -233,5 +251,9 @@ int main()
     ImGui_ImplOpenGL3_Init("#version 330");
 
     app.setUpWindowEventHandlers();
+
+    app.basic_hole.radius = 3.0f;
+    app.basic_hole.depth = 2.5;
+    app.basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
     return app.AppMain();
 }
