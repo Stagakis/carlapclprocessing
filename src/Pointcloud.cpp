@@ -1,7 +1,3 @@
-//
-// Created by stagakis on 21/8/20.
-//
-
 #include "Pointcloud.h"
 #include <iostream>
 #include <fstream>
@@ -12,7 +8,7 @@
 using namespace std;
 
 
-Pointcloud::Pointcloud(std::string filename) {
+Pointcloud::Pointcloud(std::string filename, glm::mat4 transform) {
 
     ifstream myfile;
     myfile.open(filename);
@@ -29,8 +25,6 @@ Pointcloud::Pointcloud(std::string filename) {
         in >> new_point.x >> new_point.y >> new_point.z;
         points.push_back(new_point);
     }
-
-    //cout<< *(float*)(&points[0]) << endl;
 
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

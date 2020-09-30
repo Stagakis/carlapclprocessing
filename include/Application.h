@@ -19,13 +19,19 @@ const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 900; // 1080;//
 const std::string WINDOW_NAME = "CPSoS"; // 1080;//
 
+struct Hole{
+    glm::vec3 center{};
+    float radius{}, depth{};
+    Hole(glm::vec3 _center, float _radius, float _depth){center = _center; radius = _radius; depth = _depth;}
+    Hole()= default;
+};
+glm::mat4 Carla_to_Opengl_coordinates = glm::mat4(1.0f,0.0f,0.0f,0.0f,
+                                                  0.0f,0.0f,1.0f,0.0f,
+                                                  0.0f,-1.0f,0.0f,0.0f,
+                                                  0.0f,0.0f,0.0f,1.0f);
+
 class Application : public IWindowEventListener{
 public:
-
-    glm::mat4 Carla_to_Opengl_coordinates = glm::mat4(1.0f,0.0f,0.0f,0.0f,
-                                                      0.0f,0.0f,1.0f,0.0f,
-                                                      0.0f,-1.0f,0.0f,0.0f,
-                                                      0.0f,0.0f,0.0f,1.0f);
 
     glm::mat4 imu_carla_to_opengl_coords = glm::mat4(0.0f,1.0f,0.0f,0.0f,
                                                      0.0f,0.0f,1.0f,0.0f,
@@ -35,11 +41,10 @@ public:
     glm::vec3 velocity = glm::vec3(0.0f);
 
     // settings
-    struct Hole{
-        glm::vec3 center;
-        float radius, depth;
-    };
+
     Hole basic_hole;
+
+    std::vector<Hole> holes;
 
     //std::vector<GLuint> textures;
 
@@ -50,7 +55,7 @@ public:
     std::vector<ImageDrawable> images;
     std::vector<Pointcloud> pointclouds;
     CarlaImuParser imu_data;
-    size_t frameIndex=0;
+    size_t frameIndex=3;
 
     // timing
     float deltaTime = 0.0f;	// time between current frame and last frame
