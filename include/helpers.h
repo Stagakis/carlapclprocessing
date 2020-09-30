@@ -7,7 +7,42 @@
 #include <GLFW/glfw3.h>
 #include "iostream"
 #include "Pointcloud.h"
+#include "Application.h"
 #define LOG(X) std::cout << X << std::endl;
+
+
+void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
+    std::vector<Point> out_points;
+    auto pcl_center = glm::vec3(pcl.model[3][0], pcl.model[3][1], pcl.model[3][2]);
+    //LOG("pcl_center    : " << pcl_center.x << " " << pcl_center.y << " " << pcl_center.z);
+
+    for (int i = 0; i < pcl.points.size(); i++) {
+        glm::vec3 aPos(pcl.points[i].x, pcl.points[i].y,
+                       pcl.points[i].z);
+        glm::vec4 world_pos = pcl.model * glm::vec4(aPos, 1.0f);
+        if (glm::distance(glm::vec3(world_pos), hole.center) <= hole.radius) {
+            //LOG("Distance before: " << glm::distance(glm::vec3(world_pos), hole.center));
+            std::cout << "BEFORE  " << glm::to_string(world_pos) << std::endl;
+            world_pos.y -= hole.depth - (glm::distance(glm::vec3(world_pos), hole.center) / hole.radius) * hole.depth;
+            aPos.z += 2 ;//hole.depth - (glm::distance(glm::vec3(world_pos), hole.center) / hole.radius) * hole.depth; //TODO fix the use of world_pos
+            std::cout << "AFTER  " << glm::to_string(world_pos) << std::endl;
+
+            glm::vec3 camera_to_point_ray = glm::vec3(world_pos) - pcl_center;
+            float modifier = (-2.403600f - world_pos.y) / camera_to_point_ray.y;
+
+            glm::vec3 intersection_point = glm::vec3(world_pos) + camera_to_point_ray * modifier;
+
+            //LOG(pcl_center.x << " " << pcl_center.y << " " << pcl_center.z);
+            //LOG("Intersection_point: " << intersection_point.x << " " << intersection_point.y << " " << intersection_point.z);
+            //LOG(glm::distance(intersection_point, hole.center));
+            if (distance(intersection_point, hole.center) > hole.radius) continue;
+            //std::cout << "AFTER  " << glm::to_string(world_pos) << std::endl;
+        }
+        world_pos = glm::transpose(Carla_to_Opengl_coordinates) * world_pos;
+        out_points.emplace_back(world_pos[0], world_pos[1], world_pos[2]);
+    }
+    pcl.points = std::vector<Point>(out_points);
+}
 
 void save2obj(const std::string filename, std::vector<Point> points){
     std::ofstream myfile;

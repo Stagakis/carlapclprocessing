@@ -2,24 +2,34 @@
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
 #include "helpers.h"
+#include <future>
+
+void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){
+    int width, height, nrChannels;
+    imgData->operator[](i).data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
+    imgData->operator[](i).width = width;
+    imgData->operator[](i).height = height;
+    imgData->operator[](i).nrChannels = nrChannels;
+}
+
 
 int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
-
-
+    auto files = glob("../resources/*.ply");
+    std::vector<std::future<void>> futures;
+    std::vector<ImageData> imgData(files.size());
+    for(size_t i = 0; i < files.size(); i++) {
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
+    }
     glEnable(GL_DEPTH_TEST);
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ourShader.setInt("texture0",0);
     imu_data = CarlaImuParser("../resources/imu.txt");
 
-    auto files = glob("../resources/*.ply");
-
-    int width, height, nrChannels;
-    for(size_t i = 0; i < files.size(); i++) {
+    for(int i = 0; i < files.size() ; i++) {
         pointclouds.emplace_back(files[i]);
-        images.emplace_back(std::string(files[i].substr(0, files[i].size() - 4) + ".png"));
-
-        unsigned char *data = stbi_load( std::string(files[i].substr(0, files[i].size() - 4) + ".png").c_str(), &width, &height, &nrChannels, 0);
+        futures[i].get();
+        images.emplace_back(imgData[i]);
     }
 
     pointclouds[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
@@ -33,7 +43,6 @@ int Application::AppMain() {
         world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
         pointclouds[i].model =  world_to_lidar*Carla_to_Opengl_coordinates;
     }
-    //WindowEventPublisher::addKeyboardListener(pclHand);
 
     ourShader.use();
 
@@ -59,7 +68,6 @@ int Application::AppMain() {
         // activate shader
         ourShader.use();
 
-
         // pass projection matrix to shader (note that in this case it could change every frame)
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         ourShader.setMat4("projection", projection);
@@ -82,7 +90,14 @@ int Application::AppMain() {
         ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
 
-
+        for(int k =0 ; k < files.size(); k++) {
+            for (int i = 0; i < holes.size(); i++) {
+                applyHole2Pointcloud(pointclouds[k], holes[i]);
+            }
+            save2obj("../carla_test_frame"+std::to_string(k)+".obj", pointclouds[k].points);
+        }
+        return 0;
+        /*//  //   OUTPUT FILE FOR MATLAB CODE
         std::vector<Point> processed_points;
         for (int i = 0; i < pointclouds[frameIndex].points.size(); i++) {
             glm::vec3 aPos(pointclouds[frameIndex].points[i].x, pointclouds[frameIndex].points[i].y,
@@ -104,6 +119,8 @@ int Application::AppMain() {
         }
         save2obj("../resources/carla.obj", processed_points);
         return 0;
+        //*/
+
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
         for(int k = 1; k<pointclouds.size() ; k++) {
             frameIndex = k;
@@ -252,8 +269,13 @@ int main()
 
     app.setUpWindowEventHandlers();
 
-    app.basic_hole.radius = 3.0f;
-    app.basic_hole.depth = 2.5;
+    app.basic_hole.radius = 5.0f;
+    app.basic_hole.depth = 1.5;
     app.basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
+
+    app.holes.emplace_back(glm::vec3(1.0f, -2.4f, -16.5f), 2.0, 1.2);
+    //app.holes.emplace_back(glm::vec3(2.0f, -2.4f, -20.0f), 1.5, 2.0);
+    app.holes.emplace_back(glm::vec3(-1.0f, -2.4f, -10.0f), 1.8, 0.8);
+
     return app.AppMain();
 }

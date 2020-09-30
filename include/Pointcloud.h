@@ -1,14 +1,10 @@
-//
-// Created by stagakis on 21/8/20.
-//
-
 #ifndef MYOPENGL_POINTCLOUD_H
 #define MYOPENGL_POINTCLOUD_H
 
 #include <string>
 #include <vector>
 #include "Drawable.h"
-
+#include "glm/glm.hpp"
 struct Point{
     float x,y,z;
     Point(float _x, float _y, float _z){
@@ -26,7 +22,7 @@ class Pointcloud : public Drawable{
         std::vector<Point> points;
 
         void draw() override;
-        explicit Pointcloud(std::string filename);
+        explicit Pointcloud(std::string filename, glm::mat4 transform = glm::mat4(1.0f));
 };
 
 
