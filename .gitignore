@@ -1,4 +1,5 @@
 cmake-build-debug/
 *.obj
+resources_old/
 build/
 .idea/
