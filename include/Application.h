@@ -14,6 +14,7 @@
 #include "IWindowEventListener.h"
 #include "Pointcloud.h"
 #include "ImageDrawable.h"
+#include "TransformParser.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//
