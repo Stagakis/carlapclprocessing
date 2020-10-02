@@ -23,7 +23,6 @@ int Application::AppMain() {
     }
     glEnable(GL_DEPTH_TEST);
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
-    ourShader.setInt("texture0",0);
     imu_data = CarlaImuParser("../resources/imu.txt");
 
     for(int i = 0; i < files.size() ; i++) {
@@ -32,20 +31,21 @@ int Application::AppMain() {
         images.emplace_back(imgData[i]);
     }
 
-    pointclouds[0].model = glm::mat4(1.0f)*Carla_to_Opengl_coordinates;
+    pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);
+    //LOG(glm::to_string(glm::mat4(1.0f)));
     for(size_t i = 1 ; i < files.size(); i++){
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
-        glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
+        glm::vec3 accel_opengl = imu_carla_to_opengl_coords * accel_carla  ;
 
         float dt = imu_data.timestamp[i] - imu_data.timestamp[i-1];
         velocity += accel_opengl*dt;
         world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
-        pointclouds[i].model =  world_to_lidar*Carla_to_Opengl_coordinates;
+        pointclouds[i].model =  Carla_to_Opengl_coordinates * world_to_lidar;
     }
 
     ourShader.use();
-
+    ourShader.setInt("texture0",0);
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
     while (!glfwWindowShouldClose(window))
@@ -76,20 +76,22 @@ int Application::AppMain() {
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("view", view);
 
-
+        ourShader.setInt("program_switcher", 0);
+        glDisable(GL_DEPTH_TEST);
         images[frameIndex].draw();
+        glEnable(GL_DEPTH_TEST);
 
-
-        //ourShader.setMat4("model", world_to_lidar*Carla_to_Opengl_coordinates);
-
+        ourShader.setInt("program_switcher", 1);
         ourShader.setMat4("model", pointclouds[frameIndex].model);
-        pointclouds[frameIndex].draw();
-
         ourShader.setFloat("hole_radius", basic_hole.radius);
         ourShader.setFloat("hole_depth", basic_hole.depth);
         ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
+        pointclouds[frameIndex].draw();
 
+
+
+        /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k =0 ; k < files.size(); k++) {
             for (int i = 0; i < holes.size(); i++) {
                 applyHole2Pointcloud(pointclouds[k], holes[i]);
@@ -97,28 +99,8 @@ int Application::AppMain() {
             save2obj("../carla_test_frame"+std::to_string(k)+".obj", pointclouds[k].points);
         }
         return 0;
-        /*//  //   OUTPUT FILE FOR MATLAB CODE
-        std::vector<Point> processed_points;
-        for (int i = 0; i < pointclouds[frameIndex].points.size(); i++) {
-            glm::vec3 aPos(pointclouds[frameIndex].points[i].x, pointclouds[frameIndex].points[i].y,
-                           pointclouds[frameIndex].points[i].z);
-            glm::vec4 world_pos = pointclouds[frameIndex].model * glm::vec4(aPos, 1.0f);
-            if (glm::distance(glm::vec3(world_pos), basic_hole.center) <= basic_hole.radius) {
-                std::cout << "BEFORE  " << glm::to_string(world_pos) << std::endl;
 
-                world_pos.y -= basic_hole.depth - (glm::distance(glm::vec3(world_pos), basic_hole.center) / basic_hole.radius) * basic_hole.depth;
 
-                glm::vec3 camera_to_point_ray = glm::vec3(world_pos) - camera.Position;
-                float modifier = (-2.4 - world_pos.y) / camera_to_point_ray.y;
-                glm::vec3 intersection_point = glm::vec3(world_pos) + camera_to_point_ray * modifier;
-
-                //if (distance(intersection_point, basic_hole.center) > basic_hole.radius) continue;
-                std::cout << "AFTER  " << glm::to_string(world_pos) << std::endl;
-            }
-            processed_points.emplace_back(world_pos[0], world_pos[1], world_pos[2]);
-        }
-        save2obj("../resources/carla.obj", processed_points);
-        return 0;
         //*/
 
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
@@ -126,7 +108,7 @@ int Application::AppMain() {
             frameIndex = k;
             glm::vec4 accel_carla = glm::vec4(imu_data.accel[frameIndex].x, imu_data.accel[frameIndex].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
-            glm::vec3 accel_opengl = glm::transpose(imu_carla_to_opengl_coords) * accel_carla  ;
+            glm::vec3 accel_opengl = imu_carla_to_opengl_coords * accel_carla  ;
 
             float dt = imu_data.timestamp[frameIndex] - imu_data.timestamp[frameIndex-1];
             velocity += accel_opengl*dt;
@@ -200,7 +182,7 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
 void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addKeyboardListener(camera);
     WindowEventPublisher::addKeyboardListener(*this);
-    WindowEventPublisher::addMouseListener(camera);
+    //WindowEventPublisher::addMouseListener(camera);
     WindowEventPublisher::addScrollListener(camera);
     WindowEventPublisher::addFrameUpdateListener(camera);
 }
@@ -211,10 +193,9 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
 
     //ImGui::Text("This is some useful text.");   // Display some text (you can use a format strings too)
-
+    ImGui::SliderFloat("CameraZoom", &camera.Zoom, 60.0f, 120.0f);
     ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
     ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
-
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
     auto view = camera.GetViewMatrix();
@@ -222,9 +203,9 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::Text("FrameNumber = %d", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
     ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
-    ImGui::Text("Accel:  %f %f %f    ",  (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[frameIndex], 1.0f))[0],
-                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[frameIndex], 1.0f))[1],
-                (glm::transpose(imu_carla_to_opengl_coords) * glm::vec4(imu_data.accel[frameIndex], 1.0f))[2]);
+    ImGui::Text("Accel:  %f %f %f    ",  (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[0],
+                (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[1],
+                (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[2]);
 
     ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -236,7 +217,12 @@ int main()
 {
     auto app = Application();
 
-    app.camera = Camera(glm::vec3(0.0f, 0.0f, 2.0f));
+    //app.camera = Camera(glm::vec3(0.0f, -0.4f, -2.0f));
+    auto displ = glm::vec3(2.0f, 0.0f, 2.0f) - glm::vec3(0.0f, 0.0f, 2.4f);
+    auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f) ;
+    app.camera = Camera(glm::vec3(camera_pos));
+    //app.camera = Camera(glm::vec3(0.0f, -0.4f,-2.0f));
+
 
     app.window = createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, "CPSoS", false);
     if(app.window == NULL) return -1;
@@ -254,7 +240,6 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
 
     // Setup Dear ImGui context /////////////////////
     IMGUI_CHECKVERSION();
