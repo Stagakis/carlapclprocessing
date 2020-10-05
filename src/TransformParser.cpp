@@ -7,7 +7,7 @@ TransformParser::TransformParser(std::string filename) {
     std::ifstream myfile;
     myfile.open(filename);
     std::string line;
-    std::vector<std::string> names = {"Transform(Location(", "Rotation("};
+    std::vector<std::string> names = {"Transform(Location(", "Rotation(","Transform(Location(", "Rotation("};
 
     for (; std::getline(myfile, line);)   //read stream line by line
     {
@@ -24,11 +24,14 @@ TransformParser::TransformParser(std::string filename) {
                 auto length2 = data_xyz.find(',') - start2;
                 xyz[j] = stof(data_xyz.substr(start2, length2));
                 data_xyz = data_xyz.substr(length2 + start2 + 2, std::string::npos);
-                std::cout << "tipota" << std::endl;
-
             }
-            if(i==0) rgbPos.emplace_back(xyz[0], xyz[1], xyz[2]);
-            if(i==1) rgbRot.emplace_back(xyz[0], xyz[1], xyz[2]);
+
+            if (i == 0) rgbPos.emplace_back(xyz[0], xyz[1], xyz[2]);
+            if (i == 1) rgbRot.emplace_back(xyz[0], xyz[1], xyz[2]);
+            if (i == 2) lidarPos.emplace_back(xyz[0], xyz[1], xyz[2]);
+            if (i == 3) lidarRot.emplace_back(xyz[0], xyz[1], xyz[2]);
+
+            line = line.substr(start + length + 1, std::string::npos);
         }
 
     }
