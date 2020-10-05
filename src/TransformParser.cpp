@@ -36,3 +36,7 @@ TransformParser::TransformParser(std::string filename) {
 
     }
 }
+
+TransformParser::TransformParser() {
+
+}
