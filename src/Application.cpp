@@ -24,6 +24,7 @@ int Application::AppMain() {
     glEnable(GL_DEPTH_TEST);
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     imu_data = CarlaImuParser("../resources/imu.txt");
+    transformData = TransformParser("../resources/lidar_cam_metadata.txt");
 
     for(int i = 0; i < files.size() ; i++) {
         pointclouds.emplace_back(files[i]);
@@ -33,6 +34,7 @@ int Application::AppMain() {
 
     pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);
     for(size_t i = 1 ; i < files.size(); i++){
+        
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
         glm::vec3 accel_opengl = imu_carla_to_opengl_coords * accel_carla  ;
@@ -216,7 +218,6 @@ int main()
 {
     auto app = Application();
 
-    auto trans = TransformParser("../resources/lidar_cam_metadata.txt");
     //app.camera = Camera(glm::vec3(0.0f, -0.4f, -2.0f));
     auto displ = glm::vec3(2.0f, 0.0f, 2.0f) - glm::vec3(0.0f, 0.0f, 2.4f);
     auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f) ;

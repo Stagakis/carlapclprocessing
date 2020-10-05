@@ -58,6 +58,7 @@ public:
     std::vector<ImageDrawable> images;
     std::vector<Pointcloud> pointclouds;
     CarlaImuParser imu_data;
+    TransformParser transformData;
     size_t frameIndex=0;
 
     // timing
