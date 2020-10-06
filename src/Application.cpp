@@ -19,8 +19,6 @@ int Application::AppMain() {
 
     auto files = glob("../resources/*.ply");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
-    imu_data = CarlaImuParser("../resources/imu.txt");
-    transformData = TransformParser("../resources/lidar_cam_metadata.txt");
 
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size());
@@ -48,9 +46,10 @@ int Application::AppMain() {
         velocity += accel_opengl*dt;
         world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
         */
-        auto translation_gl = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
+        auto translation_gl = glm::vec3(imu_carla_to_opengl_coords *glm::vec4(transformData.lidarPos[i], 1.0f) );
         auto rotation_gl = glm::vec3(glm::vec4(transformData.lidarRot[i], 1.0f) );
         pointclouds[i].calculateModelMatrix(translation_gl, rotation_gl);
+        //pointclouds[i].model = imu_carla_to_opengl_coords * pointclouds[i].model;
     }
 
     ourShader.use();
@@ -172,6 +171,26 @@ int Application::AppMain() {
     return 0;
 }
 
+void Application::initialization() {
+
+    imu_data = CarlaImuParser("../resources/imu.txt");
+    transformData = TransformParser("../resources/lidar_cam_metadata.txt");
+
+    auto displ = transformData.rgbPos[0] - transformData.lidarPos[0];
+    auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f) ;
+    camera = Camera(glm::vec3(camera_pos));
+
+    basic_hole.radius = 5.0f;
+    basic_hole.depth = 1.5;
+    basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
+
+    holes.emplace_back(glm::vec3(1.0f, -2.4f, -16.5f), 2.0, 1.2);
+    //app.holes.emplace_back(glm::vec3(2.0f, -2.4f, -20.0f), 1.5, 2.0);
+    holes.emplace_back(glm::vec3(-1.0f, -2.4f, -10.0f), 1.8, 0.8);
+
+
+}
+
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if(glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
         camera.following = !camera.following;
@@ -221,16 +240,10 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::End();
 }
 
+
 int main()
 {
     auto app = Application();
-
-    //app.camera = Camera(glm::vec3(0.0f, -0.4f, -2.0f));
-    auto displ = glm::vec3(2.0f, 0.0f, 2.0f) - glm::vec3(0.0f, 0.0f, 2.4f);
-    auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f) ;
-    app.camera = Camera(glm::vec3(camera_pos));
-    //app.camera = Camera(glm::vec3(0.0f, -0.4f,-2.0f));
-
 
     app.window = createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, "CPSoS", false);
     if(app.window == NULL) return -1;
@@ -262,13 +275,6 @@ int main()
 
     app.setUpWindowEventHandlers();
 
-    app.basic_hole.radius = 5.0f;
-    app.basic_hole.depth = 1.5;
-    app.basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
-
-    app.holes.emplace_back(glm::vec3(1.0f, -2.4f, -16.5f), 2.0, 1.2);
-    //app.holes.emplace_back(glm::vec3(2.0f, -2.4f, -20.0f), 1.5, 2.0);
-    app.holes.emplace_back(glm::vec3(-1.0f, -2.4f, -10.0f), 1.8, 0.8);
-
+    app.initialization();
     return app.AppMain();
 }

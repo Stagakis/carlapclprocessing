@@ -68,6 +68,7 @@ public:
     void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color);
     void setUpWindowEventHandlers();
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
+    void initialization();
 
     int AppMain();
 };
