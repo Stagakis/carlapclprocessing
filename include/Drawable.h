@@ -15,7 +15,7 @@ class Drawable {
 
 inline void Drawable::calculateModelMatrix(glm::vec3 translation, glm::vec3 pyr, glm::vec3 scale) {
     auto trans = glm::translate(glm::mat4(1.0f), translation);
-    auto rot = glm::eulerAngleYXZ(glm::radians(pyr[1]), glm::radians(pyr[0]), glm::radians(pyr[2]));
+    auto rot = glm::eulerAngleYXZ(glm::radians(pyr[1]), glm::radians(pyr[0]), glm::radians(pyr[2] - 90));
     auto scl = glm::scale(glm::mat4(1.0f), scale);
     model = trans * rot * scl;
 }
