@@ -13,6 +13,7 @@ public:
     std::vector<glm::vec3> rgbRot;
     std::vector<glm::vec3> lidarRot;
     TransformParser();
+    void moveToOrigin();
     explicit TransformParser(std::string filename);
 };
 
