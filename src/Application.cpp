@@ -21,22 +21,22 @@ int Application::AppMain() {
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
 
     std::vector<std::future<void>> futures;
-    std::vector<ImageData> imgData(files.size());
-    for(size_t i = 1; i < files.size(); i++) {
+    std::vector<ImageData> imgData(files.size()/2);
+    for(size_t i = 1; i < files.size()/2; i++) {
         futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
     }
 
     loadTexture(&imgData, files[0].substr(0, files[0].size() - 4) + ".png", 0);
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
-    for(int i = 1; i < files.size() - 1; i++) {
+    for(int i = 1; i < files.size()/2 - 1; i++) {
         pointclouds.emplace_back(files[i]);
         futures[i].get();
         images.emplace_back(imgData[i]);
     }
-    pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);
+    //pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);
 
-    for(size_t i = 0 ; i < files.size(); i++){
+    for(size_t i = 0 ; i < files.size()/2; i++){
         /*
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
@@ -46,9 +46,9 @@ int Application::AppMain() {
         velocity += accel_opengl*dt;
         world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
         */
-        auto translation_gl = glm::vec3(imu_carla_to_opengl_coords *glm::vec4(transformData.lidarPos[i], 1.0f) );
-        auto rotation_gl = glm::vec3(glm::vec4(transformData.lidarRot[i], 1.0f) );
-        pointclouds[i].calculateModelMatrix(translation_gl, rotation_gl);
+        pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
+        pointclouds[i].ypr = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[i], 1.0f) );
+        pointclouds[i].updateModelMatrix();
         //pointclouds[i].model = imu_carla_to_opengl_coords * pointclouds[i].model;
     }
 
@@ -177,8 +177,10 @@ void Application::initialization() {
     transformData = TransformParser("../resources/lidar_cam_metadata.txt");
 
     auto displ = transformData.rgbPos[0] - transformData.lidarPos[0];
-    auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f) ;
+    auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f);
+
     camera = Camera(glm::vec3(camera_pos));
+    transformData.moveToOrigin();
 
     basic_hole.radius = 5.0f;
     basic_hole.depth = 1.5;

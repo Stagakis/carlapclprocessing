@@ -40,3 +40,20 @@ TransformParser::TransformParser(std::string filename) {
 TransformParser::TransformParser() {
 
 }
+
+void TransformParser::moveToOrigin() {
+    std::vector<glm::vec3> rgbPos_new;
+    std::vector<glm::vec3> lidarPos_new;
+    std::vector<glm::vec3> rgbRot_new;
+    std::vector<glm::vec3> lidarRot_new;
+    for(int i = 0; i < rgbPos.size(); i++){
+        rgbPos_new.push_back(rgbPos[i] - rgbPos[ std::max(i-1, 0)]);
+        lidarPos_new.push_back(rgbRot[i] - rgbRot[ std::max(i-1, 0)]);
+        rgbRot_new.push_back(lidarPos[i] - lidarPos[ std::max(i-1, 0)]);
+        lidarRot_new.push_back(lidarRot[i] - lidarRot[ std::max(i-1, 0)]);
+    }
+    rgbPos = rgbPos_new;
+    rgbRot = lidarPos_new;
+    lidarPos = rgbRot_new;
+    lidarRot = lidarRot_new;
+}
