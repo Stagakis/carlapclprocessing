@@ -47,7 +47,7 @@ public:
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix();
 
-    void SetFollowingObject(Drawable* _obj);
+    void SetFollowingObject(Drawable* _obj, glm::vec3 _offset = glm::vec3(0.0f, 0.0f, 0.0f));
 
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
 
@@ -63,6 +63,7 @@ private:
     // calculates the front vector from the Camera's (updated) Euler Angles
 
     Drawable * obj = nullptr;
+    glm::vec3 offset;
     void updateCameraVectors();
 };
 #endif

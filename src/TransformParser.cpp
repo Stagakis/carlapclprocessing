@@ -42,10 +42,12 @@ TransformParser::TransformParser() {
 }
 
 void TransformParser::moveToOrigin() {
+    //*//
     std::vector<glm::vec3> rgbPos_new;
     std::vector<glm::vec3> lidarPos_new;
     std::vector<glm::vec3> rgbRot_new;
     std::vector<glm::vec3> lidarRot_new;
+
     for(int i = 0; i < rgbPos.size(); i++){
         rgbPos_new.push_back(rgbPos[i] - rgbPos[ std::max(i-1, 0)]);
         lidarPos_new.push_back(rgbRot[i] - rgbRot[ std::max(i-1, 0)]);
@@ -56,4 +58,19 @@ void TransformParser::moveToOrigin() {
     rgbRot = lidarPos_new;
     lidarPos = rgbRot_new;
     lidarRot = lidarRot_new;
+    //*/
+
+    /*//
+    auto rgbPos_start = rgbPos[0];
+    auto rgbRot_start = rgbRot[0];
+    auto lidarPos_start = lidarPos[0];
+    auto lidarRot_start = lidarRot[0];
+    for(int i = 0; i < rgbPos.size(); i++){
+        rgbPos[i] -= rgbPos_start;
+        rgbRot[i] -= rgbRot_start;
+        lidarPos[i] -= lidarPos_start;
+        lidarRot[i] -= lidarRot_start;
+    }
+    //*/
+
 }

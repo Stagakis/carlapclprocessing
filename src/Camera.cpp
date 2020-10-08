@@ -21,7 +21,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 glm::mat4 Camera::GetViewMatrix()
 {
     if(following){
-        Position = obj->translation;
+        Position = obj->translation + offset;
     }
     return glm::lookAt(Position, Position + Front, Up);
 }
@@ -125,6 +125,7 @@ void Camera::OnFrameUpdate(GLFWwindow* window, float deltaTime) {
 
 }
 
-void Camera::SetFollowingObject(Drawable* _obj) {
+void Camera::SetFollowingObject(Drawable* _obj, glm::vec3 _offset) {
     obj = _obj;
+    offset = _offset;
 }
