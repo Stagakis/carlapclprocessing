@@ -58,7 +58,7 @@ int Application::AppMain() {
     glEnable(GL_PROGRAM_POINT_SIZE);
     while (!glfwWindowShouldClose(window))
     {
-        camera.SetFollowingObject(&pointclouds[frameIndex]);
+        camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
 
 
         float currentFrame = glfwGetTime();
@@ -96,8 +96,6 @@ int Application::AppMain() {
         ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
         pointclouds[frameIndex].draw();
-
-
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k =0 ; k < files.size(); k++) {
@@ -176,8 +174,17 @@ void Application::initialization() {
     imu_data = CarlaImuParser("../resources/imu.txt");
     transformData = TransformParser("../resources/lidar_cam_metadata.txt");
 
-    auto displ = transformData.rgbPos[0] - transformData.lidarPos[0];
-    auto camera_pos = imu_carla_to_opengl_coords * glm::vec4(displ, 1.0f);
+    auto lidar_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[0], 1.0f);
+    auto lidar_pos = glm::eulerAngleYXZ(glm::radians( lidar_rot[0]), glm::radians( lidar_rot[1]), glm::radians( lidar_rot[2]))
+                      * imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[0], 1.0f);
+    auto rgb_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbRot[0], 1.0f);
+    auto rgb_pos =  glm::eulerAngleYXZ(glm::radians( rgb_rot[0]), glm::radians( rgb_rot[1]), glm::radians( rgb_rot[2]))
+                      * imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[0], 1.0f);
+
+    glm::vec4 cameraToLidarOffset_lidarSpace = rgb_pos - lidar_pos;
+
+    cameraToLidarOffset = glm::vec3(cameraToLidarOffset_lidarSpace);
+    auto camera_pos = cameraToLidarOffset;
 
     camera = Camera(glm::vec3(camera_pos));
     transformData.moveToOrigin();
