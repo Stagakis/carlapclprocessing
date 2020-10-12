@@ -60,7 +60,6 @@ int Application::AppMain() {
     {
         camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
 
-
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -91,18 +90,21 @@ int Application::AppMain() {
 
         ourShader.setInt("program_switcher", 1);
         ourShader.setMat4("model", pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
-        ourShader.setFloat("hole_radius", basic_hole.radius);
-        ourShader.setFloat("hole_depth", basic_hole.depth);
-        ourShader.setVec3("hole_center", basic_hole.center);
+        //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
+        ourShader.setFloat("hole_radius", holes[0].radius);
+        ourShader.setFloat("hole_depth", holes[0].depth);
+
+        ourShader.setVec3("hole_center", holes[0].center);
         ourShader.setVec3("cameraPos", camera.Position);
         pointclouds[frameIndex].draw();
 
-        /*//  //   OUTPUT FILE FOR MATLAB CODE
-        for(int k =0 ; k < files.size(); k++) {
+        //*//  //   OUTPUT FILE FOR MATLAB CODE
+        for(int k=0 ; k < files.size(); k++) {
+        //for(int k=23; k < 24; k++) {
             for (int i = 0; i < holes.size(); i++) {
                 applyHole2Pointcloud(pointclouds[k], holes[i]);
             }
-            save2obj("../carla_test_frame"+std::to_string(k)+".obj", pointclouds[k].points);
+            save2obj(files[k].substr(0, files[k].size() - 4) + ".obj", pointclouds[k].points);
         }
         return 0;
 
@@ -185,18 +187,29 @@ void Application::initialization() {
 
     cameraToLidarOffset = glm::vec3(cameraToLidarOffset_lidarSpace);
     auto camera_pos = cameraToLidarOffset;
-
     camera = Camera(glm::vec3(camera_pos));
-    transformData.moveToOrigin();
+
+    //transformData.moveToOrigin();
 
     basic_hole.radius = 5.0f;
     basic_hole.depth = 1.5;
     basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
 
-    holes.emplace_back(glm::vec3(1.0f, -2.4f, -16.5f), 2.0, 1.2);
-    //app.holes.emplace_back(glm::vec3(2.0f, -2.4f, -20.0f), 1.5, 2.0);
-    holes.emplace_back(glm::vec3(-1.0f, -2.4f, -10.0f), 1.8, 0.8);
+    holes.emplace_back(glm::vec3(110.900932, 0.2, -100.492569), 1.8f, 1.5f);
+    holes.emplace_back(glm::vec3(106.900932, 0.2, -190.492569), 1.6f, 1.4f);
+    holes.emplace_back(glm::vec3(104.900932, 0.2, -80.492569), 1.5f, 1.3f);
 
+    holes.emplace_back(glm::vec3(106.900932, 0.2, -115.492569), 1.8f, 1.5f);
+    holes.emplace_back(glm::vec3(104.900932, 0.2, -130.492569), 1.4f, 1.0f);
+    holes.emplace_back(glm::vec3(110.900932, 0.2, -144.492569), 1.2f, 1.0f);
+    holes.emplace_back(glm::vec3(107.900932, 0.2, -150.492569), 1.0f, 1.0f);
+    holes.emplace_back(glm::vec3(106.900932, 0.2, -165.492569), 1.5f, 2.0f);
+
+    //holes.emplace_back(glm::vec3(-6.91f, -1.79f, 56.53), 2.0, 1.2);
+    //holes.emplace_back(glm::vec3(-22.0f, -2.52f, 124), 2.0, 1.2);
+
+    //app.holes.emplace_back(glm::vec3(2.0f, -2.4f, -20.0f), 1.5, 2.0);
+    //holes.emplace_back(glm::vec3(-1.0f, -2.4f, -10.0f), 1.8, 0.8);
 
 }
 
@@ -209,19 +222,15 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
         glfwSetWindowShouldClose(window, true);
     }
     if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){
+        //holes[0].center += glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex], 1.0f));
+        globalCameraPos += transformData.rgbPos[frameIndex];
         frameIndex = std::min(pointclouds.size() - 1, frameIndex + 1);
     }
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
+        //holes[0].center -= transformData.rgbPos[frameIndex];
+        globalCameraPos -= transformData.rgbPos[frameIndex];
         frameIndex = std::max((size_t)0 ,  frameIndex-1);
     }
-}
-
-void Application::setUpWindowEventHandlers() {
-    WindowEventPublisher::addKeyboardListener(camera);
-    WindowEventPublisher::addKeyboardListener(*this);
-    WindowEventPublisher::addMouseListener(camera);
-    WindowEventPublisher::addScrollListener(camera);
-    WindowEventPublisher::addFrameUpdateListener(camera);
 }
 
 void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 &clear_color) {
@@ -239,6 +248,11 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     //ImGui::SameLine();
     ImGui::Text("FrameNumber = %d", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
+    ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
+    ImGui::Text("GobalCamPos: %f %f %f ", globalCameraPos[0], globalCameraPos[1], globalCameraPos[2]);
+
+    ImGui::Text("hole[0] Center: %f %f %f ", holes[0].center[0], holes[0].center[1], holes[0].center[2]);
+
     ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
     ImGui::Text("Accel:  %f %f %f    ",  (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[0],
                 (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[1],
@@ -249,6 +263,14 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::End();
 }
 
+
+void Application::setUpWindowEventHandlers() {
+    WindowEventPublisher::addKeyboardListener(camera);
+    WindowEventPublisher::addKeyboardListener(*this);
+    WindowEventPublisher::addMouseListener(camera);
+    WindowEventPublisher::addScrollListener(camera);
+    WindowEventPublisher::addFrameUpdateListener(camera);
+}
 
 int main()
 {
