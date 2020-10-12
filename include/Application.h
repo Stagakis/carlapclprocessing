@@ -59,8 +59,9 @@ public:
     std::vector<Pointcloud> pointclouds;
     CarlaImuParser imu_data;
     TransformParser transformData;
-    size_t frameIndex=0;
+    size_t frameIndex=23;
     glm::vec3 cameraToLidarOffset;
+    glm::vec3 globalCameraPos = glm::vec3(0.0f,0.0f,0.0f); // TODO delete this after you fix the return to origin.
 
     // timing
     float deltaTime = 0.0f;	// time between current frame and last frame
