@@ -18,7 +18,7 @@ CarlaImuParser::CarlaImuParser(std::string filename) {
     {
         std::istringstream in(line);
 
-        for(int i = 0; i<names.size() ; i++){
+        for(size_t i = 0; i<names.size() ; i++){
 
             if(names[i] == "accelerometer=Vector3D(" || names[i] == "gyroscope=Vector3D(") {
                 auto start = line.find(names[i]) + std::string(names[i]).length();
@@ -29,7 +29,7 @@ CarlaImuParser::CarlaImuParser(std::string filename) {
                 float xyz[3];
                 for(int j = 0; j < 3 ; j++){
                     auto start = data_xyz.find('=') + 1;
-                    auto length = data_xyz.find(',') - start;
+                    //auto length = data_xyz.find(',') - start;
                     data_xyz = data_xyz.substr(start, -1);
                     xyz[j] = stof(data_xyz);
 

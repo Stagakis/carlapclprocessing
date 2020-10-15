@@ -22,7 +22,7 @@ class Pointcloud : public Drawable{
         std::vector<Point> points;
 
         void draw() override;
-        explicit Pointcloud(std::string filename, glm::mat4 transform = glm::mat4(1.0f));
+        explicit Pointcloud(std::string filename);
 };
 
 

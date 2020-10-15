@@ -8,7 +8,7 @@
 using namespace std;
 
 
-Pointcloud::Pointcloud(std::string filename, glm::mat4 transform) {
+Pointcloud::Pointcloud(std::string filename) {
 
     ifstream myfile;
     myfile.open(filename);

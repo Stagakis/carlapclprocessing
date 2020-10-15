@@ -40,9 +40,9 @@ void Camera::updateCameraVectors()
     // calculate the new Front vector
     glm::vec3 front;
     if(following){
-        front.x = cos(glm::radians(obj->ypr[0] - 90)) * cos(glm::radians(obj->ypr[1]));
+        front.x = cos(glm::radians(obj->ypr[0]  )) * cos(glm::radians(obj->ypr[1]));
         front.y = sin(glm::radians(obj->ypr[1]));
-        front.z = sin(glm::radians(obj->ypr[0] - 90)) * cos(glm::radians(obj->ypr[1]));
+        front.z = sin(glm::radians(obj->ypr[0]  )) * cos(glm::radians(obj->ypr[1]));
         Front = glm::normalize(front);
     }
     else {
