@@ -9,16 +9,21 @@ class Drawable {
     public:
         unsigned int VBO = 0, VAO = 0, EBO = 0, texture = 0;
         glm::mat4 model = glm::mat4(1.0f);
-        glm::vec3 translation, ypr, scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        glm::mat4 translationMatrix;
+        glm::mat4 rotationMatrix;
+
+        glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 ypr = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
         void updateModelMatrix();
         virtual void draw() = 0;
 };
 
 inline void Drawable::updateModelMatrix() {
-    auto trans = glm::translate(glm::mat4(1.0f), translation);
-    auto rot = glm::eulerAngleYXZ(glm::radians(ypr[0]), glm::radians(ypr[1]), glm::radians(ypr[2]));
+    translationMatrix = glm::translate(glm::mat4(1.0f), translation);
+    rotationMatrix = glm::eulerAngleYXZ(glm::radians(ypr[0]), glm::radians(ypr[1]), glm::radians(ypr[2]));
     auto scl = glm::scale(glm::mat4(1.0f), scale);
-    model = trans * rot * scl;
+    model = translationMatrix * rotationMatrix * scl;
 }
 
 

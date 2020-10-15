@@ -89,7 +89,7 @@ int Application::AppMain() {
         glEnable(GL_DEPTH_TEST);
 
         ourShader.setInt("program_switcher", 1);
-        ourShader.setMat4("model", pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
+        ourShader.setMat4("model", pointclouds[frameIndex].model * glm::transpose(pointclouds[frameIndex].rotationMatrix) * Carla_to_Opengl_coordinates);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
         ourShader.setFloat("hole_radius", holes[0].radius);
         ourShader.setFloat("hole_depth", holes[0].depth);
@@ -98,7 +98,7 @@ int Application::AppMain() {
         ourShader.setVec3("cameraPos", camera.Position);
         pointclouds[frameIndex].draw();
 
-        //*//  //   OUTPUT FILE FOR MATLAB CODE
+        /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
         //for(int k=23; k < 24; k++) {
             for (int i = 0; i < holes.size(); i++) {
@@ -107,8 +107,6 @@ int Application::AppMain() {
             save2obj(files[k].substr(0, files[k].size() - 4) + ".obj", pointclouds[k].points);
         }
         return 0;
-
-
         //*/
 
         /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
@@ -182,14 +180,8 @@ void Application::initialization() {
     auto rgb_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbRot[0], 1.0f);
     auto rgb_pos =  glm::eulerAngleYXZ(glm::radians( rgb_rot[0]), glm::radians( rgb_rot[1]), glm::radians( rgb_rot[2]))
                       * imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[0], 1.0f);
-
-    glm::vec4 cameraToLidarOffset_lidarSpace = rgb_pos - lidar_pos;
-
-    cameraToLidarOffset = glm::vec3(cameraToLidarOffset_lidarSpace);
-    auto camera_pos = cameraToLidarOffset;
-    camera = Camera(glm::vec3(camera_pos));
-
-    //transformData.moveToOrigin();
+    cameraToLidarOffset = glm::vec3(rgb_pos - lidar_pos);
+    camera = Camera(cameraToLidarOffset);
 
     basic_hole.radius = 5.0f;
     basic_hole.depth = 1.5;
@@ -222,13 +214,9 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
         glfwSetWindowShouldClose(window, true);
     }
     if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){
-        //holes[0].center += glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex], 1.0f));
-        globalCameraPos += transformData.rgbPos[frameIndex];
         frameIndex = std::min(pointclouds.size() - 1, frameIndex + 1);
     }
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
-        //holes[0].center -= transformData.rgbPos[frameIndex];
-        globalCameraPos -= transformData.rgbPos[frameIndex];
         frameIndex = std::max((size_t)0 ,  frameIndex-1);
     }
 }
@@ -244,21 +232,26 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-    auto view = camera.GetViewMatrix();
     //ImGui::SameLine();
-    ImGui::Text("FrameNumber = %d", frameIndex);
+    ImGui::Text("FrameNumber = %ld", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
+    ImGui::Text("CameraRot: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
+
     ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
+
+    /*
+    auto view = camera.GetViewMatrix();
+
     ImGui::Text("GobalCamPos: %f %f %f ", globalCameraPos[0], globalCameraPos[1], globalCameraPos[2]);
 
     ImGui::Text("hole[0] Center: %f %f %f ", holes[0].center[0], holes[0].center[1], holes[0].center[2]);
-
     ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
     ImGui::Text("Accel:  %f %f %f    ",  (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[0],
                 (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[1],
                 (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[2]);
 
     ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
+     */
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
 }

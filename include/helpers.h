@@ -99,6 +99,7 @@ GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fulls
         glfwTerminate();
         return NULL;
     }
+    return window;
 }
 
 
