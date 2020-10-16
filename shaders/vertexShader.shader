@@ -33,8 +33,8 @@ void main()
             gl_PointSize = max(1.0f, 10.0f -0.25f*length(gl_Position));
 
             fragColor = color;
-            //if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
-            //else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
+            if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
+            else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
 
             if(distance(world_pos.xyz, hole_center) <= hole_radius && world_pos.y <= bed_level){
                 world_pos.y -= hole_depth - (distance(world_pos.xyz, hole_center)/hole_radius) * hole_depth;

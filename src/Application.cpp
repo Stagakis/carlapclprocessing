@@ -82,14 +82,15 @@ int Application::AppMain() {
         ourShader.setInt("program_switcher", 1);
         ourShader.setMat4("model", pointclouds[frameIndex].model * glm::transpose(pointclouds[frameIndex].rotationMatrix) * Carla_to_Opengl_coordinates);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
-        ourShader.setFloat("hole_radius", holes[0].radius);
-        ourShader.setFloat("hole_depth", holes[0].depth);
+        ourShader.setFloat("hole_radius", basic_hole.radius);
+        ourShader.setFloat("hole_depth", basic_hole.depth);
 
-        ourShader.setVec3("hole_center", holes[0].center);
+        ourShader.setVec3("hole_center", basic_hole.center);
         ourShader.setVec3("cameraPos", camera.Position);
 
         //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        pcl.draw();
+        pointclouds[frameIndex].draw();
+        //pcl.draw();
         //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
@@ -120,11 +121,10 @@ void Application::initialization() {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glGenTextures(1, &fbTexture);
     glBindTexture(GL_TEXTURE_2D, fbTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1600, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1600, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     imu_data = CarlaImuParser("../resources/imu.txt");
