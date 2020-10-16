@@ -4,15 +4,6 @@
 #include "helpers.h"
 #include <future>
 
-void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){
-    int width, height, nrChannels;
-    imgData->operator[](i).data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
-    imgData->operator[](i).width = width;
-    imgData->operator[](i).height = height;
-    imgData->operator[](i).nrChannels = nrChannels;
-}
-
-
 int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
@@ -49,13 +40,13 @@ int Application::AppMain() {
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
         pointclouds[i].ypr = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[i], 1.0f) );
         pointclouds[i].updateModelMatrix();
-        //pointclouds[i].model = imu_carla_to_opengl_coords * pointclouds[i].model;
     }
 
     ourShader.use();
     ourShader.setInt("texture0",0);
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
+    auto pcl = Pointcloud("../004489_saliency_binary.obj");
     while (!glfwWindowShouldClose(window))
     {
         camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
@@ -96,7 +87,10 @@ int Application::AppMain() {
 
         ourShader.setVec3("hole_center", holes[0].center);
         ourShader.setVec3("cameraPos", camera.Position);
-        pointclouds[frameIndex].draw();
+
+        //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        pcl.draw();
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
@@ -108,55 +102,6 @@ int Application::AppMain() {
         }
         return 0;
         //*/
-
-        /*// //OUTPUT FILE WRITTING FOR PYTHON VISUALIZATION
-        for(int k = 1; k<pointclouds.size() ; k++) {
-            frameIndex = k;
-            glm::vec4 accel_carla = glm::vec4(imu_data.accel[frameIndex].x, imu_data.accel[frameIndex].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
-
-            glm::vec3 accel_opengl = imu_carla_to_opengl_coords * accel_carla  ;
-
-            float dt = imu_data.timestamp[frameIndex] - imu_data.timestamp[frameIndex-1];
-            velocity += accel_opengl*dt;
-
-            camera.Position += velocity + 0.5f*accel_opengl*(dt*dt);
-            world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
-            std::ofstream myfile;
-            myfile.open(files[k]+"_all.txt");
-            myfile.write((glm::to_string(camera.Position) + "\n").c_str(), (glm::to_string(camera.Position) + "\n").length());
-
-            std::cout << files[k] << "Has: " << pointclouds[frameIndex].points.size() << " points"<< std::endl;
-
-            for (int i = 0; i < pointclouds[frameIndex].points.size(); i++) {
-                //std::cout << "===" << std::endl;
-                //if(i!=pcl_index) continue;
-                glm::vec3 aPos(pointclouds[frameIndex].points[i].x, pointclouds[frameIndex].points[i].y,
-                               pointclouds[frameIndex].points[i].z);
-                glm::vec4 world_pos = world_to_lidar * Carla_to_Opengl_coordinates * glm::vec4(aPos, 1.0f);
-
-
-                if (glm::distance(glm::vec3(world_pos), basic_hole.center) <= basic_hole.radius) {
-                    std::cout << "BEFORE  " << glm::to_string(world_pos) << std::endl;
-
-                    world_pos.y -= basic_hole.depth - (glm::distance(glm::vec3(world_pos), basic_hole.center) / basic_hole.radius) * basic_hole.depth;
-
-
-                    glm::vec3 camera_to_point_ray = glm::vec3(world_pos) - camera.Position;
-                    float modifier = (-2.4 - world_pos.y) / camera_to_point_ray.y;
-                    //world_pos.y + x*camera_to_point.y = -2.4 => x = (-2.4 -wolrd_pos.y)/camera_to_point.y;
-                    glm::vec3 intersection_point = glm::vec3(world_pos) + camera_to_point_ray * modifier;
-                    //myfile.write((glm::to_string(world_pos) + "\n").c_str(), (glm::to_string(world_pos) + "\n").length());
-
-                    if (distance(intersection_point, basic_hole.center) > basic_hole.radius) continue;
-                    std::cout << "AFTER   " << glm::to_string(world_pos) << std::endl;
-
-                }
-                myfile.write((glm::to_string(world_pos) + "\n").c_str(), (glm::to_string(world_pos) + "\n").length());
-
-            }
-            myfile.close();
-        }
-        return 0;//*/
 
         // Rendering
         ImGui::Render();
@@ -171,9 +116,19 @@ int Application::AppMain() {
 
 void Application::initialization() {
 
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glGenTextures(1, &fbTexture);
+    glBindTexture(GL_TEXTURE_2D, fbTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1600, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     imu_data = CarlaImuParser("../resources/imu.txt");
     transformData = TransformParser("../resources/lidar_cam_metadata.txt");
-
     auto lidar_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[0], 1.0f);
     auto lidar_pos = glm::eulerAngleYXZ(glm::radians( lidar_rot[0]), glm::radians( lidar_rot[1]), glm::radians( lidar_rot[2]))
                       * imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[0], 1.0f);
@@ -197,19 +152,12 @@ void Application::initialization() {
     holes.emplace_back(glm::vec3(107.900932, 0.2, -150.492569), 1.0f, 1.0f);
     holes.emplace_back(glm::vec3(106.900932, 0.2, -165.492569), 1.5f, 2.0f);
 
-    //holes.emplace_back(glm::vec3(-6.91f, -1.79f, 56.53), 2.0, 1.2);
-    //holes.emplace_back(glm::vec3(-22.0f, -2.52f, 124), 2.0, 1.2);
-
-    //app.holes.emplace_back(glm::vec3(2.0f, -2.4f, -20.0f), 1.5, 2.0);
-    //holes.emplace_back(glm::vec3(-1.0f, -2.4f, -10.0f), 1.8, 0.8);
-
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if(glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
         camera.following = !camera.following;
     }
-
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(window, true);
     }
@@ -235,7 +183,7 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     //ImGui::SameLine();
     ImGui::Text("FrameNumber = %ld", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
-    ImGui::Text("CameraRot: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
+    ImGui::Text("CameraFront: %f %f %f ", camera.Front[0], camera.Front[1], camera.Front[2]);
 
     ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
 
@@ -255,7 +203,6 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
 }
-
 
 void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addKeyboardListener(camera);
@@ -278,7 +225,7 @@ int main()
 
     glfwMakeContextCurrent(app.window);
 
-    //glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {

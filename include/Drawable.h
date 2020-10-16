@@ -7,7 +7,7 @@
 
 class Drawable {
     public:
-        unsigned int VBO = 0, VAO = 0, EBO = 0, texture = 0;
+        unsigned int VBO = 0, VBO_color = 0, VAO = 0, EBO = 0, texture = 0;
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 translationMatrix;
         glm::mat4 rotationMatrix;

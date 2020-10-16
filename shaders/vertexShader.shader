@@ -1,6 +1,7 @@
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec3 color;
 
 out vec2 TexCoord;
 out vec3 fragColor;
@@ -30,8 +31,10 @@ void main()
 
             gl_Position = projection * view * world_pos;
             gl_PointSize = max(1.0f, 10.0f -0.25f*length(gl_Position));
-            if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
-            else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
+
+            fragColor = color;
+            //if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
+            //else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
 
             if(distance(world_pos.xyz, hole_center) <= hole_radius && world_pos.y <= bed_level){
                 world_pos.y -= hole_depth - (distance(world_pos.xyz, hole_center)/hole_radius) * hole_depth;
