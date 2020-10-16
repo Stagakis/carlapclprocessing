@@ -10,6 +10,13 @@
 #include "Application.h"
 #define LOG(X) std::cout << X << std::endl;
 
+void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){
+    int width, height, nrChannels;
+    imgData->operator[](i).data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
+    imgData->operator[](i).width = width;
+    imgData->operator[](i).height = height;
+    imgData->operator[](i).nrChannels = nrChannels;
+}
 
 void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
     float bed_level = hole.center.y + 0.1f;
@@ -101,7 +108,6 @@ GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fulls
     }
     return window;
 }
-
 
 
 #endif //MYOPENGL_HELPERS_H
