@@ -59,7 +59,7 @@ public:
     std::vector<Pointcloud> pointclouds;
     CarlaImuParser imu_data;
     TransformParser transformData;
-    size_t frameIndex=59;
+    size_t frameIndex=0;
     glm::vec3 cameraToLidarOffset;
     //glm::vec3 globalCameraPos = glm::vec3(0.0f,0.0f,0.0f); // TODO delete this after you fix the return to origin.
 

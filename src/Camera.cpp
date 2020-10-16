@@ -21,6 +21,9 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 glm::mat4 Camera::GetViewMatrix()
 {
     if(following){
+        Yaw = obj->ypr[0];
+        Pitch = obj->ypr[1];
+        updateCameraVectors();
         Position = obj->translation + offset;
     }
     return glm::lookAt(Position, Position + Front, Up);
@@ -39,18 +42,11 @@ void Camera::updateCameraVectors()
 {
     // calculate the new Front vector
     glm::vec3 front;
-    if(following){
-        front.x = cos(glm::radians(obj->ypr[0]  )) * cos(glm::radians(obj->ypr[1]));
-        front.y = sin(glm::radians(obj->ypr[1]));
-        front.z = sin(glm::radians(obj->ypr[0]  )) * cos(glm::radians(obj->ypr[1]));
-        Front = glm::normalize(front);
-    }
-    else {
-        front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-        front.y = sin(glm::radians(Pitch));
-        front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
-        Front = glm::normalize(front);
-    }
+    front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+    front.y = sin(glm::radians(Pitch));
+    front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
+    Front = glm::normalize(front);
+
     // also re-calculate the Right and Up vector
     Right = glm::normalize(glm::cross(Front, WorldUp));  // normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     Up    = glm::normalize(glm::cross(Right, Front));
