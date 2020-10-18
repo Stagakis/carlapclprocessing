@@ -49,4 +49,5 @@ target_link_libraries(MyOpengl glfw glad glm imgui)
 
 #Create links to the shader files
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/shaders/fragmentShader.shader ${CMAKE_CURRENT_BINARY_DIR}/fragmentShader.shader)
+file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/shaders/KNearest_fragent.shader ${CMAKE_CURRENT_BINARY_DIR}/KNearest_fragent.shader)
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/shaders/vertexShader.shader ${CMAKE_CURRENT_BINARY_DIR}/vertexShader.shader)

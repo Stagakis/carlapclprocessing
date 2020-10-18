@@ -10,6 +10,7 @@ int Application::AppMain() {
 
     auto files = glob("../resources/*.ply");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
+    ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
 
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size()/2);
@@ -46,6 +47,8 @@ int Application::AppMain() {
     ourShader.setInt("texture0",0);
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     auto pcl = Pointcloud("../004489_saliency_binary.obj");
     while (!glfwWindowShouldClose(window))
     {
@@ -60,6 +63,10 @@ int Application::AppMain() {
         ImGui::NewFrame();
         imGuiDrawWindow(basic_hole.radius, basic_hole.depth, clear_color);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -82,16 +89,39 @@ int Application::AppMain() {
         ourShader.setInt("program_switcher", 1);
         ourShader.setMat4("model", pointclouds[frameIndex].model * glm::transpose(pointclouds[frameIndex].rotationMatrix) * Carla_to_Opengl_coordinates);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
-        ourShader.setFloat("hole_radius", basic_hole.radius);
-        ourShader.setFloat("hole_depth", basic_hole.depth);
+        ourShader.setFloat("hole_radius", holes[0].radius);
+        ourShader.setFloat("hole_depth", holes[0].depth);
 
-        ourShader.setVec3("hole_center", basic_hole.center);
+        ourShader.setVec3("hole_center", holes[0].center);
         ourShader.setVec3("cameraPos", camera.Position);
 
-        //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         pointclouds[frameIndex].draw();
-        //pcl.draw();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+        postProcessShader.use();
+        postProcessShader.setInt("program_switcher", 0);
+        postProcessShader.setVec2("stepSize", 1.0f/SCR_WIDTH, 1.0f/SCR_HEIGHT);
+        postProcessShader.setFloat("alpha_value", 1.0f);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glDisable(GL_DEPTH_TEST);
+        //glDisable(GL_BLEND);
+
+        images[frameIndex].draw(fbTexture);
+        images[frameIndex].draw(fbTexture);
+        images[frameIndex].draw(fbTexture);
+        images[frameIndex].draw(fbTexture);
+        images[frameIndex].draw(fbTexture);
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glEnable(GL_BLEND);
+        postProcessShader.setFloat("alpha_value", 0.5f);
+
+        images[frameIndex].draw(fbTexture);
+
+        glEnable(GL_DEPTH_TEST);
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
@@ -117,13 +147,17 @@ int Application::AppMain() {
 
 void Application::initialization() {
 
+
+
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glGenTextures(1, &fbTexture);
     glBindTexture(GL_TEXTURE_2D, fbTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1600, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1600, 800, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
