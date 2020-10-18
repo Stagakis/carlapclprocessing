@@ -13,6 +13,8 @@ struct ImageData{
 class ImageDrawable : public Drawable {
 public:
     void draw() override;
+    void draw(GLuint texture);
+
     explicit ImageDrawable(std::string filename);
     ImageDrawable();
     ImageDrawable(unsigned char *data, int width, int height, int nrChannels);

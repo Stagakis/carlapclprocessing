@@ -113,3 +113,10 @@ ImageDrawable::ImageDrawable() {
 }
 
 ImageDrawable::ImageDrawable(ImageData& imgData) : ImageDrawable(imgData.data, imgData.width, imgData.height, imgData.nrChannels){}
+
+void ImageDrawable::draw(GLuint texture) {
+    glBindVertexArray(VAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}

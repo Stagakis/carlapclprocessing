@@ -29,7 +29,7 @@ public:
     glm::vec3 Right{};
     glm::vec3 WorldUp{};
     bool cameraIsActive = true;
-    bool following = false;
+    bool following = true;
 
     // euler Angles
     float Yaw;
