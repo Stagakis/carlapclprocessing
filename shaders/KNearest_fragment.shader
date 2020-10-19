@@ -14,19 +14,6 @@ uniform float alpha_value;
 // vec3(0.15f, 0.15f, 0.9f); road color
 void main()
 {
-    //FragColor = texture2D(texture0, TexCoord);
-    //if(FragColor.rgb == vec3(0.0f,0.0f,0.0f)) discard;
-    //return;
-
-    mat4 test_for_blue;
-    mat4 texture_roi;
-    for(int i = 0; i < 4; i++){
-        for(int j = 0; j < 4; j++){
-            test_for_blue[i][j] = 0.9f;
-            texture_roi[i][j] = texture2D(texture0, TexCoord + vec2(j*stepSize.st[0], i*stepSize.st[1])).rgb;
-        }
-    }
-    int num_of_blue_pixels = dot(texture_roi, test_for_blue)/16.0f;
 
     if(texture2D(texture0, TexCoord).rgb != vec3(0.0f, 0.0f, 0.0f)){ //The fragment already has a color
         FragColor = vec4(texture2D(texture0, TexCoord).rgb, alpha_value);
