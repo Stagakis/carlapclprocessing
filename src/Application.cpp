@@ -52,6 +52,25 @@ int Application::AppMain() {
     auto pcl = Pointcloud("../004489_saliency_binary.obj");
     while (!glfwWindowShouldClose(window))
     {
+        auto lidar_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[frameIndex], 1.0f);
+        auto lidar_pos = glm::eulerAngleYXZ(glm::radians( lidar_rot[0]), glm::radians( lidar_rot[1]), glm::radians( lidar_rot[2]))
+                         * imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[frameIndex], 1.0f);
+        auto rgb_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbRot[frameIndex], 1.0f);
+        auto rgb_pos =  glm::eulerAngleYXZ(glm::radians( rgb_rot[0]), glm::radians( rgb_rot[1]), glm::radians( rgb_rot[2]))
+                        * imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex], 1.0f);
+
+        cameraToLidarOffset = - imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex], 1.0f);
+        cameraToLidarOffset.x = - cameraToLidarOffset.x;
+
+        LOG("-----");
+        LOG(glm::to_string(transformData.lidarPos[frameIndex]));
+        LOG(glm::to_string(transformData.rgbPos[frameIndex]));
+        LOG(glm::to_string(transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex]));
+        LOG(glm::to_string(transformData.lidarRot[frameIndex]));
+        LOG(glm::to_string(pointclouds[frameIndex].ypr));
+        LOG(glm::to_string(cameraToLidarOffset));
+        LOG("-----");
+
         camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
 
         float currentFrame = glfwGetTime();
@@ -87,7 +106,7 @@ int Application::AppMain() {
         glEnable(GL_DEPTH_TEST);
 
         ourShader.setInt("program_switcher", 1);
-        ourShader.setMat4("model", pointclouds[frameIndex].model * glm::transpose(pointclouds[frameIndex].rotationMatrix) * Carla_to_Opengl_coordinates);
+        ourShader.setMat4("model", pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
         ourShader.setFloat("hole_radius", holes[0].radius);
         ourShader.setFloat("hole_depth", holes[0].depth);
@@ -99,7 +118,6 @@ int Application::AppMain() {
         pointclouds[frameIndex].draw();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
         postProcessShader.use();
         postProcessShader.setInt("program_switcher", 0);
         postProcessShader.setVec2("stepSize", 1.0f/SCR_WIDTH, 1.0f/SCR_HEIGHT);
@@ -108,12 +126,11 @@ int Application::AppMain() {
         glDisable(GL_DEPTH_TEST);
         //glDisable(GL_BLEND);
 
-        images[frameIndex].draw(fbTexture);
-        images[frameIndex].draw(fbTexture);
-        images[frameIndex].draw(fbTexture);
-        images[frameIndex].draw(fbTexture);
-        images[frameIndex].draw(fbTexture);
-
+        //images[frameIndex].draw(fbTexture);
+        //images[frameIndex].draw(fbTexture);
+        //images[frameIndex].draw(fbTexture);
+        //images[frameIndex].draw(fbTexture);
+        //images[frameIndex].draw(fbTexture);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glEnable(GL_BLEND);
@@ -163,14 +180,8 @@ void Application::initialization() {
 
     imu_data = CarlaImuParser("../resources/imu.txt");
     transformData = TransformParser("../resources/lidar_cam_metadata.txt");
-    auto lidar_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[0], 1.0f);
-    auto lidar_pos = glm::eulerAngleYXZ(glm::radians( lidar_rot[0]), glm::radians( lidar_rot[1]), glm::radians( lidar_rot[2]))
-                      * imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[0], 1.0f);
-    auto rgb_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbRot[0], 1.0f);
-    auto rgb_pos =  glm::eulerAngleYXZ(glm::radians( rgb_rot[0]), glm::radians( rgb_rot[1]), glm::radians( rgb_rot[2]))
-                      * imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[0], 1.0f);
-    cameraToLidarOffset = glm::vec3(rgb_pos - lidar_pos);
-    camera = Camera(cameraToLidarOffset);
+
+    camera = Camera();
 
     basic_hole.radius = 5.0f;
     basic_hole.depth = 1.5;
@@ -209,7 +220,7 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
 
     //ImGui::Text("This is some useful text.");   // Display some text (you can use a format strings too)
-    ImGui::SliderFloat("CameraZoom", &camera.Zoom, 60.0f, 120.0f);
+    ImGui::SliderFloat("CameraZoom", &camera.Zoom, 40.0f, 110.0f);
     ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
     ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
@@ -218,6 +229,8 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::Text("FrameNumber = %ld", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
     ImGui::Text("CameraFront: %f %f %f ", camera.Front[0], camera.Front[1], camera.Front[2]);
+    ImGui::Text("CameraYP: %f %f  ", camera.Yaw, camera.Pitch);
+    ImGui::Text("PclYPR: %f %f %f ", pointclouds[frameIndex].ypr[0], pointclouds[frameIndex].ypr[1],pointclouds[frameIndex].ypr[2]);
 
     ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
 
@@ -259,7 +272,7 @@ int main()
 
     glfwMakeContextCurrent(app.window);
 
-    glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetInputMode(app.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {

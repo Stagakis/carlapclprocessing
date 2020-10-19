@@ -8,7 +8,7 @@
 #include "iostream"
 #include "Pointcloud.h"
 #include "Application.h"
-#define LOG(X) std::cout << X << std::endl;
+#define LOG(X) std::cout << X << std::endl
 
 void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){
     int width, height, nrChannels;

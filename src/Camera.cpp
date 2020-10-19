@@ -21,7 +21,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 glm::mat4 Camera::GetViewMatrix()
 {
     if(following){
-        Yaw = obj->ypr[0];
+        Yaw = -obj->ypr[0] - 90;
         Pitch = obj->ypr[1];
         updateCameraVectors();
         Position = obj->translation + offset;
