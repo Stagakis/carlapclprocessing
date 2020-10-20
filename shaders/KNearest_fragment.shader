@@ -3,6 +3,7 @@ out vec4 FragColor;
 
 in vec3 fragColor;
 in vec2 TexCoord;
+in float fragDistance;
 
 // texture samplers
 uniform sampler2D texture0;
@@ -14,19 +15,20 @@ uniform float alpha_value;
 // vec3(0.15f, 0.15f, 0.9f); road color
 void main()
 {
+    float final_alpha_value = alpha_value;
 
     if(texture2D(texture0, TexCoord).rgb != vec3(0.0f, 0.0f, 0.0f)){ //The fragment already has a color
-        FragColor = vec4(texture2D(texture0, TexCoord).rgb, alpha_value);
+        FragColor = vec4(texture2D(texture0, TexCoord).rgb, final_alpha_value);
         return;
     }
 
-    vec4 final_color = vec4(texture(texture0, TexCoord).rgb, alpha_value); //initialize the color with the current pixel
+    vec4 final_color = vec4(texture(texture0, TexCoord).rgb, final_alpha_value); //initialize the color with the current pixel
     for(int u = -radius; u<radius; u++){
         int v_range = int(sqrt(pow(radius,2) - pow(u,2)));
         for(int v = -v_range; v< v_range; v++){
             vec3 color = texture2D(texture0, TexCoord + vec2(u*stepSize.st[0], v*stepSize.st[1])).rgb;
             if(color.rgb != vec3(0.0f, 0.0f, 0.0f)){
-                final_color = vec4(color, alpha_value);
+                final_color = vec4(color, final_alpha_value);
             }
         }
     }

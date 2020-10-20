@@ -5,6 +5,7 @@ layout (location = 2) in vec3 color;
 
 out vec2 TexCoord;
 out vec3 fragColor;
+out float fragDistance;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -31,11 +32,11 @@ void main()
 
             gl_Position = projection * view * world_pos;
             gl_PointSize = max(1.0f, 10.0f -0.25f*length(gl_Position));
+            fragDistance = length(gl_Position);
 
+            //if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
+            //else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
             fragColor = color;
-            if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
-            else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
-
             if(distance(world_pos.xyz, hole_center) <= hole_radius && world_pos.y <= bed_level){
                 world_pos.y -= hole_depth - (distance(world_pos.xyz, hole_center)/hole_radius) * hole_depth;
 
@@ -48,7 +49,7 @@ void main()
                     return;
                 }
 
-                fragColor = vec3( distance(world_pos.xyz, hole_center) / (hole_radius), 0.1f,0.1f);
+                //fragColor = vec3( distance(world_pos.xyz, hole_center) / (hole_radius), 0.1f,0.1f);
                 gl_Position = projection * view * world_pos;
 
                 gl_PointSize = max(5.0f, 5.0f -0.15f*length(gl_Position));
