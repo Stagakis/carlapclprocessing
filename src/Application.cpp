@@ -40,6 +40,7 @@ int Application::AppMain() {
         */
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
         pointclouds[i].ypr = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[i], 1.0f) );
+        //pointclouds[i].ypr[0] = -pointclouds[i].ypr[0];
         pointclouds[i].updateModelMatrix();
     }
 
@@ -65,9 +66,11 @@ int Application::AppMain() {
         LOG("-----");
         LOG(glm::to_string(transformData.lidarPos[frameIndex]));
         LOG(glm::to_string(transformData.rgbPos[frameIndex]));
-        LOG(glm::to_string(transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex]));
+        LOG(glm::to_string(-transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex]));
+        LOG(glm::to_string(-imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex], 1.0f)));
         LOG(glm::to_string(transformData.lidarRot[frameIndex]));
         LOG(glm::to_string(pointclouds[frameIndex].ypr));
+        LOG(glm::to_string(pointclouds[frameIndex].translation));
         LOG(glm::to_string(cameraToLidarOffset));
         LOG("-----");
 
