@@ -8,25 +8,28 @@ int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
-    auto files = glob("../resources/*.ply");
+    //auto files = glob("../resources/*.ply");
+    auto files = glob("../resources/*.obj");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
 
     std::vector<std::future<void>> futures;
-    std::vector<ImageData> imgData(files.size()/2);
-    for(size_t i = 1; i < files.size()/2; i++) {
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
+    std::vector<ImageData> imgData(files.size() );
+    for(size_t i = 1; i < files.size() ; i++) {
+        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_binary.obj").size()) + ".png", i));
+
     }
 
-    loadTexture(&imgData, files[0].substr(0, files[0].size() - 4) + ".png", 0);
+    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_binary.obj").size())  + ".png", 0);
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
-    for(int i = 1; i < files.size()/2 - 1; i++) {
+    for(int i = 1; i < files.size() - 1; i++) {
         pointclouds.emplace_back(files[i]);
         futures[i].get();
         images.emplace_back(imgData[i]);
     }
-    //pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);
+    //pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);o
 
     for(size_t i = 0 ; i < files.size()/2; i++){
         /*
@@ -129,8 +132,8 @@ int Application::AppMain() {
         glDisable(GL_DEPTH_TEST);
         //glDisable(GL_BLEND);
 
-        //images[frameIndex].draw(fbTexture);
-        //images[frameIndex].draw(fbTexture);
+        images[frameIndex].draw(fbTexture);
+        images[frameIndex].draw(fbTexture);
         //images[frameIndex].draw(fbTexture);
         //images[frameIndex].draw(fbTexture);
         //images[frameIndex].draw(fbTexture);
