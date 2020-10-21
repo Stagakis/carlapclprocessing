@@ -1,4 +1,5 @@
 cmake-build-debug/
+*.mp4
 *.obj
 resources_old/
 results/
