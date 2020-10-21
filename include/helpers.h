@@ -1,6 +1,7 @@
 #ifndef MYOPENGL_HELPERS_H
 #define MYOPENGL_HELPERS_H
-
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <vector>
 #include <glob.h>
 #include <glad/glad.h>
@@ -8,7 +9,37 @@
 #include "iostream"
 #include "Pointcloud.h"
 #include "Application.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <stb_image.h>
+#include <stb_image_write.h>
+
 #define LOG(X) std::cout << X << std::endl
+
+void saveImage(const char* filepath, GLFWwindow* w) {
+    int width, height;
+    glfwGetFramebufferSize(w, &width, &height);
+    GLsizei nrChannels = 3;
+    GLsizei stride = nrChannels * width;
+    stride += (stride % 4) ? (4 - stride % 4) : 0;
+    GLsizei bufferSize = stride * height;
+    std::vector<char> buffer(bufferSize);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+    stbi_flip_vertically_on_write(true);
+    stbi_write_png(filepath, width, height, nrChannels, buffer.data(), stride);
+}
+
+
+void saveFrame(int frameIndex, int numberLength, GLFWwindow* w){
+    //ffmpeg -framerate 2 -i frame_%04d.png -c:v libx264 -r 30 -pix_fmt yuv420p out.mp4
+    std::string zeros;
+    for(int i = 0; i< numberLength - std::to_string(frameIndex).size(); i++ ){
+        zeros += "0";
+    }
+    saveImage(std::string("../frame_" + zeros + std::to_string(frameIndex) + ".png").c_str(), w);
+}
 
 void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){
     int width, height, nrChannels;
