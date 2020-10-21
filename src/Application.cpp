@@ -1,8 +1,10 @@
+
 #include "Application.h"
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
 #include "helpers.h"
 #include <future>
+
 
 int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
@@ -31,7 +33,7 @@ int Application::AppMain() {
     }
     //pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);o
 
-    for(size_t i = 0 ; i < files.size()/2; i++){
+    for(size_t i = 0 ; i < files.size(); i++){
         /*
         glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
 
@@ -54,7 +56,8 @@ int Application::AppMain() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     auto pcl = Pointcloud("../004489_saliency_binary.obj");
-    while (!glfwWindowShouldClose(window))
+    //while (!glfwWindowShouldClose(window))
+    for(;frameIndex < files.size();frameIndex++)
     {
         auto lidar_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[frameIndex], 1.0f);
         auto lidar_pos = glm::eulerAngleYXZ(glm::radians( lidar_rot[0]), glm::radians( lidar_rot[1]), glm::radians( lidar_rot[2]))
@@ -156,6 +159,8 @@ int Application::AppMain() {
         }
         return 0;
         //*/
+
+        saveFrame(frameIndex, 4, window);
 
         // Rendering
         ImGui::Render();

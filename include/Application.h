@@ -1,6 +1,6 @@
 #ifndef MYOPENGL_APPLICATION_H
 #define MYOPENGL_APPLICATION_H
-#define STB_IMAGE_IMPLEMENTATION
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
