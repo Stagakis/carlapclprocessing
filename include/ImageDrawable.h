@@ -8,6 +8,7 @@ struct ImageData{
     int width;
     int height;
     int nrChannels;
+    std::string name;
 };
 
 class ImageDrawable : public Drawable {
@@ -17,7 +18,7 @@ public:
 
     explicit ImageDrawable(std::string filename);
     ImageDrawable();
-    ImageDrawable(unsigned char *data, int width, int height, int nrChannels);
+    ImageDrawable(unsigned char *data, int width, int height, int nrChannels, std::string filename);
     explicit ImageDrawable(ImageData& imgData);
 
 };

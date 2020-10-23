@@ -47,7 +47,7 @@ ImageDrawable::ImageDrawable(std::string filename) {
     }
     else
     {
-        std::cout << "Failed to load texture" << std::endl;
+        std::cout << "Failed to load texture with name: " << filename << std::endl;
     }
     stbi_image_free(data);
 
@@ -60,7 +60,7 @@ void ImageDrawable::draw() {
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
-ImageDrawable::ImageDrawable(unsigned char *data, int width, int height, int nrChannels) {
+ImageDrawable::ImageDrawable(unsigned char *data, int width, int height, int nrChannels, std::string filename) {
     glGenBuffers(1, &VBO);
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &EBO);
@@ -102,7 +102,8 @@ ImageDrawable::ImageDrawable(unsigned char *data, int width, int height, int nrC
     }
     else
     {
-        std::cout << "Failed to load texture" << std::endl;
+
+        std::cout << "Failed to load texture with name: " << filename << std::endl;
     }
     stbi_image_free(data);
 
@@ -112,7 +113,7 @@ ImageDrawable::ImageDrawable() {
 
 }
 
-ImageDrawable::ImageDrawable(ImageData& imgData) : ImageDrawable(imgData.data, imgData.width, imgData.height, imgData.nrChannels){}
+ImageDrawable::ImageDrawable(ImageData& imgData) : ImageDrawable(imgData.data, imgData.width, imgData.height, imgData.nrChannels, imgData.name){}
 
 void ImageDrawable::draw(GLuint texture) {
     glBindVertexArray(VAO);

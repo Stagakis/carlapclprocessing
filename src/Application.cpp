@@ -10,42 +10,32 @@ int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
-    //auto files = glob("../resources/*.ply");
-    auto files = glob("../resources/*.obj");
+    auto files = glob("../resources/*.ply");
+    //auto files = glob("../resources/*.obj");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
 
     std::vector<std::future<void>> futures;
-    std::vector<ImageData> imgData(files.size() );
-    for(size_t i = 1; i < files.size() ; i++) {
-        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_binary.obj").size()) + ".png", i));
+    std::vector<ImageData> imgData(files.size()/2 );
+    for(size_t i = 1; i < files.size()/2 ; i++) {
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
+        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_binary.obj").size()) + ".png", i));
 
     }
+    loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
+    //loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_binary.obj").size())  + ".png", 0);
 
-    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_binary.obj").size())  + ".png", 0);
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
-    for(int i = 1; i < files.size() - 1; i++) {
+    for(int i = 1; i < files.size()/2 - 1; i++) {
         pointclouds.emplace_back(files[i]);
         futures[i].get();
         images.emplace_back(imgData[i]);
     }
-    //pointclouds[0].model = Carla_to_Opengl_coordinates;// * glm::mat4(1.0f);o
 
-    for(size_t i = 0 ; i < files.size(); i++){
-        /*
-        glm::vec4 accel_carla = glm::vec4(imu_data.accel[i].x, imu_data.accel[i].y, 0.0f,1.0f);//(8.108274, 0.061310, 0.0, 1.0f);
-
-        glm::vec3 accel_opengl = imu_carla_to_opengl_coords * accel_carla  ;
-
-        float dt = imu_data.timestamp[i] - imu_data.timestamp[i-1];
-        velocity += accel_opengl*dt;
-        world_to_lidar = glm::translate(world_to_lidar, velocity + 0.5f*accel_opengl*(dt*dt));
-        */
+    for(size_t i = 0 ; i < files.size()/2; i++){
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
-        pointclouds[i].ypr = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[i], 1.0f) );
-        //pointclouds[i].ypr[0] = -pointclouds[i].ypr[0];
+        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], transformData.lidarRot[i][2]);
         pointclouds[i].updateModelMatrix();
     }
 
@@ -56,30 +46,11 @@ int Application::AppMain() {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     auto pcl = Pointcloud("../004489_saliency_binary.obj");
-    //while (!glfwWindowShouldClose(window))
-    for(;frameIndex < files.size();frameIndex++)
+    while (!glfwWindowShouldClose(window))
+    //for(;frameIndex < files.size();frameIndex++)
     {
-        auto lidar_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.lidarRot[frameIndex], 1.0f);
-        auto lidar_pos = glm::eulerAngleYXZ(glm::radians( lidar_rot[0]), glm::radians( lidar_rot[1]), glm::radians( lidar_rot[2]))
-                         * imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[frameIndex], 1.0f);
-        auto rgb_rot = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbRot[frameIndex], 1.0f);
-        auto rgb_pos =  glm::eulerAngleYXZ(glm::radians( rgb_rot[0]), glm::radians( rgb_rot[1]), glm::radians( rgb_rot[2]))
-                        * imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex], 1.0f);
-
-        cameraToLidarOffset = - imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex], 1.0f);
-        cameraToLidarOffset.x = - cameraToLidarOffset.x;
-
-        LOG("-----");
-        LOG(glm::to_string(transformData.lidarPos[frameIndex]));
-        LOG(glm::to_string(transformData.rgbPos[frameIndex]));
-        LOG(glm::to_string(-transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex]));
-        LOG(glm::to_string(-imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[frameIndex] - transformData.rgbPos[frameIndex], 1.0f)));
-        LOG(glm::to_string(transformData.lidarRot[frameIndex]));
-        LOG(glm::to_string(pointclouds[frameIndex].ypr));
-        LOG(glm::to_string(pointclouds[frameIndex].translation));
-        LOG(glm::to_string(cameraToLidarOffset));
-        LOG("-----");
-
+        cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex] - transformData.lidarPos[frameIndex] , 1.0f);
+        //LOG(glm::to_string(cameraToLidarOffset));
         camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
 
         float currentFrame = glfwGetTime();
@@ -123,10 +94,12 @@ int Application::AppMain() {
         ourShader.setVec3("hole_center", holes[0].center);
         ourShader.setVec3("cameraPos", camera.Position);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         pointclouds[frameIndex].draw();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+        /*//
+        //POST PROCESSING
         postProcessShader.use();
         postProcessShader.setInt("program_switcher", 0);
         postProcessShader.setVec2("stepSize", 1.0f/SCR_WIDTH, 1.0f/SCR_HEIGHT);
@@ -135,8 +108,8 @@ int Application::AppMain() {
         glDisable(GL_DEPTH_TEST);
         //glDisable(GL_BLEND);
 
-        images[frameIndex].draw(fbTexture);
-        images[frameIndex].draw(fbTexture);
+        //images[frameIndex].draw(fbTexture);
+        //images[frameIndex].draw(fbTexture);
         //images[frameIndex].draw(fbTexture);
         //images[frameIndex].draw(fbTexture);
         //images[frameIndex].draw(fbTexture);
@@ -146,8 +119,9 @@ int Application::AppMain() {
         postProcessShader.setFloat("alpha_value", 0.5f);
 
         images[frameIndex].draw(fbTexture);
-
         glEnable(GL_DEPTH_TEST);
+        //saveFrame(frameIndex, 4, window);
+        //*/
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
@@ -159,8 +133,6 @@ int Application::AppMain() {
         }
         return 0;
         //*/
-
-        saveFrame(frameIndex, 4, window);
 
         // Rendering
         ImGui::Render();

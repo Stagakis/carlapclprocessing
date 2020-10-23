@@ -42,11 +42,13 @@ void saveFrame(int frameIndex, int numberLength, GLFWwindow* w){
 }
 
 void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){
+
     int width, height, nrChannels;
     imgData->operator[](i).data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
     imgData->operator[](i).width = width;
     imgData->operator[](i).height = height;
     imgData->operator[](i).nrChannels = nrChannels;
+    imgData->operator[](i).name = std::string(filepath);
 }
 
 void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
