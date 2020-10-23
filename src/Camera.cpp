@@ -1,5 +1,6 @@
 #include <Camera.h>
-
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/string_cast.hpp>
 Camera::Camera(glm::vec3 position, glm::vec3 up , float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
     Position = position;
@@ -21,9 +22,15 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 glm::mat4 Camera::GetViewMatrix()
 {
     if(following){
-        Yaw = -obj->ypr[0] - 90;
-        Pitch = obj->ypr[1];
-        updateCameraVectors();
+        Yaw =  -90 - obj->ypr[0];  //So the camera doesn't jump around when switching from following
+        Pitch = obj->ypr[1];       //
+        float time = glfwGetTime();
+        Front = glm::eulerAngleYXZ(glm::radians(obj->ypr[0]), glm::radians(obj->ypr[1]), glm::radians(0.0f)) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+
+        Right = glm::normalize(glm::cross(Front, WorldUp));
+        Up    = glm::normalize(glm::cross(Right, Front));
+        Up    = glm::rotate(glm::mat4(1.0f), glm::radians(-obj->ypr[2]), Front) * glm::vec4(Up, 1.0f);
+
         Position = obj->translation + offset;
     }
     return glm::lookAt(Position, Position + Front, Up);
