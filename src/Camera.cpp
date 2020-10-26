@@ -29,7 +29,7 @@ glm::mat4 Camera::GetViewMatrix()
 
         Right = glm::normalize(glm::cross(Front, WorldUp));
         Up    = glm::normalize(glm::cross(Right, Front));
-        Up    = glm::rotate(glm::mat4(1.0f), glm::radians(-obj->ypr[2]), Front) * glm::vec4(Up, 1.0f);
+        Up    = glm::rotate(glm::mat4(1.0f), glm::radians(obj->ypr[2]), Front) * glm::vec4(Up, 1.0f);
 
         Position = obj->translation + offset;
     }
