@@ -36,7 +36,9 @@ void main()
 
             if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
             else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
-            //fragColor = color;
+            fragColor = color;
+
+            /*
             if(distance(world_pos.xyz, hole_center) <= hole_radius && world_pos.y <= bed_level){
                 world_pos.y -= hole_depth - (distance(world_pos.xyz, hole_center)/hole_radius) * hole_depth;
 
@@ -55,6 +57,8 @@ void main()
                 gl_PointSize = max(5.0f, 5.0f -0.15f*length(gl_Position));
                 return;
             }
+            */
+
             TexCoord = vec2(aTexCoord.x, aTexCoord.y);
             break;
     }

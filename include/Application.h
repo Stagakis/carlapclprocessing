@@ -15,6 +15,7 @@
 #include "Pointcloud.h"
 #include "ImageDrawable.h"
 #include "TransformParser.h"
+#include <fstream>
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//
@@ -57,6 +58,7 @@ public:
     //PointcloudHandler pclHand = PointcloudHandler();
     std::vector<ImageDrawable> images;
     std::vector<Pointcloud> pointclouds;
+    std::vector<float> occupancyFactor;
     CarlaImuParser imu_data;
     TransformParser transformData;
     size_t frameIndex=0;
@@ -67,11 +69,18 @@ public:
     float deltaTime = 0.0f;	// time between current frame and last frame
     float lastFrame = 0.0f;
 
+    // postProcessing
+    bool usePostprocessing = true;
+    char iterNumber = 1;
+    const char iterNumberStep = 1;
+
     //off-screen rendering
     unsigned int fbo;
     unsigned int fbTexture;
 
     void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color);
+    void imGuiOccupancyFactor();
+
     void setUpWindowEventHandlers();
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
     void initialization();

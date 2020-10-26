@@ -10,30 +10,30 @@ int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
-    auto files = glob("../resources/*.ply");
-    //auto files = glob("../resources/*.obj");
+    //auto files = glob("../resources/*.ply");
+    auto files = glob("../resources/*.obj");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
 
     std::vector<std::future<void>> futures;
-    std::vector<ImageData> imgData(files.size()/2 );
-    for(size_t i = 1; i < files.size()/2 ; i++) {
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_binary.obj").size()) + ".png", i));
-
+    std::vector<ImageData> imgData(files.size() );
+    for(size_t i = 1; i < files.size() ; i++) {
+        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_binary.obj").size()) + ".png", i));
     }
-    loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
-    //loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_binary.obj").size())  + ".png", 0);
+
+    //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
+    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_binary.obj").size())  + ".png", 0);
 
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
-    for(int i = 1; i < files.size()/2 - 1; i++) {
+    for(int i = 1; i < files.size() - 1; i++) {
         pointclouds.emplace_back(files[i]);
         futures[i].get();
         images.emplace_back(imgData[i]);
     }
 
-    for(size_t i = 0 ; i < files.size()/2; i++){
+    for(size_t i = 0 ; i < files.size(); i++){
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
 
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
@@ -56,11 +56,6 @@ int Application::AppMain() {
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        imGuiDrawWindow(basic_hole.radius, basic_hole.depth, clear_color);
 
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -94,34 +89,36 @@ int Application::AppMain() {
         ourShader.setVec3("hole_center", holes[0].center);
         ourShader.setVec3("cameraPos", camera.Position);
 
-        //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        pointclouds[frameIndex].draw();
-        //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        /*//
+
         //POST PROCESSING
-        postProcessShader.use();
-        postProcessShader.setInt("program_switcher", 0);
-        postProcessShader.setVec2("stepSize", 1.0f/SCR_WIDTH, 1.0f/SCR_HEIGHT);
-        postProcessShader.setFloat("alpha_value", 1.0f);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glDisable(GL_DEPTH_TEST);
-        //glDisable(GL_BLEND);
+        if(usePostprocessing) {
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            pointclouds[frameIndex].draw();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            postProcessShader.use();
+            postProcessShader.setInt("program_switcher", 0);
+            postProcessShader.setVec2("stepSize", 1.0f / SCR_WIDTH, 1.0f / SCR_HEIGHT);
+            postProcessShader.setFloat("alpha_value", 1.0f);
+            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_BLEND);
 
-        //images[frameIndex].draw(fbTexture);
-        //images[frameIndex].draw(fbTexture);
-        //images[frameIndex].draw(fbTexture);
-        //images[frameIndex].draw(fbTexture);
-        //images[frameIndex].draw(fbTexture);
+            for(int i = 0; i < iterNumber ; ++i)
+                images[frameIndex].draw(fbTexture);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glEnable(GL_BLEND);
-        postProcessShader.setFloat("alpha_value", 0.5f);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glEnable(GL_BLEND);
+            postProcessShader.setFloat("alpha_value", 0.5f);
 
-        images[frameIndex].draw(fbTexture);
-        glEnable(GL_DEPTH_TEST);
+            images[frameIndex].draw(fbTexture);
+            glEnable(GL_DEPTH_TEST);
+        }
+        else
+            pointclouds[frameIndex].draw();
+
         //saveFrame(frameIndex, 4, window);
-        //*/
+
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
@@ -135,6 +132,13 @@ int Application::AppMain() {
         //*/
 
         // Rendering
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        imGuiDrawWindow(basic_hole.radius, basic_hole.depth, clear_color);
+        //oImGui::ShowDemoWindow();
+        imGuiOccupancyFactor();
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwPollEvents();
@@ -147,7 +151,12 @@ int Application::AppMain() {
 
 void Application::initialization() {
 
-
+    std::ifstream inFile;
+    inFile.open("../resources/occupancy_factor.csv");
+    std::string line;
+    for (; std::getline(inFile, line);){
+        occupancyFactor.push_back(stof(line.substr(line.find(',') + 1, std::string::npos)));
+    }
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -217,6 +226,11 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
 
     ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
 
+    ImGui::Checkbox("PostProcessing", &usePostprocessing);
+    if(usePostprocessing){
+        //ImGui::SameLine();
+        ImGui::InputScalar("IterNumber",      ImGuiDataType_S8,     &iterNumber, &iterNumberStep, NULL, "%d");
+    }
     /*
     auto view = camera.GetViewMatrix();
 
@@ -242,8 +256,24 @@ void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addFrameUpdateListener(camera);
 }
 
+void Application::imGuiOccupancyFactor() {
+    ImGui::Begin("Help");   // Create a window called "Hello, world!" and append into it.
+
+    ImGui::Text("OccupancyFactor = %f", occupancyFactor[frameIndex]);
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Dangerous area");
+    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Be-aware area");
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "semi dangerous area");
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Offroad Danger");
+    ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "Safe area");
+    ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "No Idea");
+
+    ImGui::End();
+}
+
 int main()
 {
+
+
     auto app = Application();
 
     app.window = createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, "CPSoS", false);

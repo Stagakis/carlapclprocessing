@@ -45,6 +45,7 @@ void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, in
 
     int width, height, nrChannels;
     imgData->operator[](i).data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
+    imgData->operator[](i).data = stbi_load(filepath.c_str(), &width, &height, &nrChannels, 0);
     imgData->operator[](i).width = width;
     imgData->operator[](i).height = height;
     imgData->operator[](i).nrChannels = nrChannels;
