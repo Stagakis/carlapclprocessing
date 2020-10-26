@@ -35,7 +35,8 @@ int Application::AppMain() {
 
     for(size_t i = 0 ; i < files.size()/2; i++){
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
-        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], transformData.lidarRot[i][2]);
+
+        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
 
@@ -50,7 +51,6 @@ int Application::AppMain() {
     //for(;frameIndex < files.size();frameIndex++)
     {
         cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex] - transformData.lidarPos[frameIndex] , 1.0f);
-        //LOG(glm::to_string(cameraToLidarOffset));
         camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
 
         float currentFrame = glfwGetTime();
