@@ -4,14 +4,14 @@
 #include "ShaderLoader.h"
 #include "helpers.h"
 #include <future>
-
+#include <iostream>
 
 int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
     glEnable(GL_DEPTH_TEST);
 
     //auto files = glob("../resources/*.ply");
-    auto files = glob("../resources/*.obj");
+    auto files = glob("../resources_ego1/*_saliency_segmentation.obj");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
 
@@ -19,11 +19,11 @@ int Application::AppMain() {
     std::vector<ImageData> imgData(files.size() );
     for(size_t i = 1; i < files.size() ; i++) {
         //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_binary.obj").size()) + ".png", i));
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_segmentation.obj").size()) + ".png", i));
     }
 
     //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
-    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_binary.obj").size())  + ".png", 0);
+    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_segmentation.obj").size())  + ".png", 0);
 
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
@@ -170,8 +170,8 @@ void Application::initialization() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    imu_data = CarlaImuParser("../resources/imu.txt");
-    transformData = TransformParser("../resources/lidar_cam_metadata.txt");
+    //imu_data = CarlaImuParser("../resources/imu.txt");
+    transformData = TransformParser("../resources_ego1/camera_metadata.txt", "../resources_ego1/lidar_metadata.txt");
 
     camera = Camera();
 
@@ -231,19 +231,7 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
         //ImGui::SameLine();
         ImGui::InputScalar("IterNumber",      ImGuiDataType_S8,     &iterNumber, &iterNumberStep, NULL, "%d");
     }
-    /*
-    auto view = camera.GetViewMatrix();
 
-    ImGui::Text("GobalCamPos: %f %f %f ", globalCameraPos[0], globalCameraPos[1], globalCameraPos[2]);
-
-    ImGui::Text("hole[0] Center: %f %f %f ", holes[0].center[0], holes[0].center[1], holes[0].center[2]);
-    ImGui::Text("Velocity:  %f %f %f ", velocity[0], velocity[1], velocity[2]);
-    ImGui::Text("Accel:  %f %f %f    ",  (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[0],
-                (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[1],
-                (imu_carla_to_opengl_coords * glm::vec4(imu_data.accel[frameIndex], 1.0f))[2]);
-
-    ImGui::Text("CameraView: %f %f %f ", view[3][0], view[3][1], view[3][2]);
-     */
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
 }

@@ -70,7 +70,7 @@ public:
     float lastFrame = 0.0f;
 
     // postProcessing
-    bool usePostprocessing = true;
+    bool usePostprocessing = false;
     char iterNumber = 1;
     const char iterNumberStep = 1;
 
