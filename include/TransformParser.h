@@ -12,9 +12,12 @@ public:
     std::vector<glm::vec3> lidarPos;
     std::vector<glm::vec3> rgbRot;
     std::vector<glm::vec3> lidarRot;
-    TransformParser();
-    void moveToOrigin();
-    explicit TransformParser(std::string filename);
+    TransformParser(); //Deprecated
+    void moveToOrigin(); //Not used
+    explicit TransformParser(std::string filename); //Deprecated
+    TransformParser(std::string rgb, std::string lidar);
+private:
+    void parseFile(const std::string filename, std::vector<glm::vec3>& outPos,std::vector<glm::vec3>& outRot);
 };
 
 

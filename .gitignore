@@ -1,7 +1,9 @@
 cmake-build-debug/
+resources*/
 *.mp4
 *.obj
 resources_old/
 results/
 build/
 .idea/
+*.mp4
