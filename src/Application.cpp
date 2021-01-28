@@ -1,10 +1,10 @@
-
 #include "Application.h"
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
 #include "helpers.h"
 #include <future>
 #include <iostream>
+
 
 int Application::AppMain() {
     stbi_set_flip_vertically_on_load(true);
@@ -32,6 +32,14 @@ int Application::AppMain() {
         futures[i].get();
         images.emplace_back(imgData[i]);
     }
+    pointclouds.emplace_back(files[files.size() - 1]);
+    images.emplace_back(imgData[files.size() - 1]);
+
+    //PREPROCESSING done if the obj is rotated from the steering
+    for(size_t i = 0 ; i < files.size() ; i++) {
+        pointclouds[i].applyYaw(steeringData.angles[i]);
+        pointclouds[i].sendDataToGPU();
+    }
 
     for(size_t i = 0 ; i < files.size(); i++){
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
@@ -46,7 +54,7 @@ int Application::AppMain() {
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    auto pcl = Pointcloud("../004489_saliency_binary.obj");
+    //auto pcl = Pointcloud("../004489_saliency_binary.obj");
     while (!glfwWindowShouldClose(window))
     //for(;frameIndex < files.size();frameIndex++)
     {
@@ -172,7 +180,7 @@ void Application::initialization() {
 
     //imu_data = CarlaImuParser("../resources/imu.txt");
     transformData = TransformParser("../resources_ego1/camera_metadata.txt", "../resources_ego1/lidar_metadata.txt");
-
+    steeringData = SteeringParser("../resources_ego1/steering_true.txt");
     camera = Camera();
 
     basic_hole.radius = 5.0f;
