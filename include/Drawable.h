@@ -15,9 +15,11 @@ class Drawable {
         glm::vec3 translation = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 ypr = glm::vec3(0.0f, 0.0f, 0.0f);
         glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+
         void updateModelMatrix(glm::vec3 rotationPivotOffest = glm::vec3(0.0f, 0.0f, 0.0f));
         virtual void draw() = 0;
 };
+
 
 inline void Drawable::updateModelMatrix(glm::vec3 rotationPivotOffest) {
     translationMatrix = glm::translate(glm::mat4(1.0f), translation);
@@ -29,6 +31,8 @@ inline void Drawable::updateModelMatrix(glm::vec3 rotationPivotOffest) {
     auto scl = glm::scale(glm::mat4(1.0f), scale);
     model = translationMatrix * rotationMatrix * scl;
 }
+
+
 
 
 #endif //MYOPENGL_DRAWABLE_H

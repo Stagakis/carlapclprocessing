@@ -16,6 +16,7 @@
 #include "ImageDrawable.h"
 #include "TransformParser.h"
 #include <fstream>
+#include "SteeringParser.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//
@@ -61,7 +62,8 @@ public:
     std::vector<float> occupancyFactor;
     CarlaImuParser imu_data;
     TransformParser transformData;
-    size_t frameIndex=0;
+    SteeringParser steeringData;
+    size_t frameIndex = 0;
     glm::vec3 cameraToLidarOffset;
     //glm::vec3 globalCameraPos = glm::vec3(0.0f,0.0f,0.0f); // TODO delete this after you fix the return to origin.
 
