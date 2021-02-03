@@ -2,8 +2,8 @@
 // Created by stagakis on 26/8/20.
 //
 
-#ifndef MYOPENGL_CARLAIMUPARSER_H
-#define MYOPENGL_CARLAIMUPARSER_H
+#ifndef MYOPENGL_IMUPARSER_H
+#define MYOPENGL_IMUPARSER_H
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-class CarlaImuParser {
+class ImuParser {
 
 public:
     std::vector<int> frame;
@@ -20,9 +20,9 @@ public:
     std::vector<glm::vec3> gyro;
     std::vector<float> compass;
 
-    explicit CarlaImuParser(std::string filename );
-    CarlaImuParser();
+    explicit ImuParser(std::string filename );
+    ImuParser();
 };
 
 
-#endif //MYOPENGL_CARLAIMUPARSER_H
+#endif //MYOPENGL_IMUPARSER_H

@@ -2,13 +2,13 @@
 // Created by stagakis on 26/8/20.
 //
 
-#include "CarlaImuParser.h"
+#include "ImuParser.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
 
-CarlaImuParser::CarlaImuParser(std::string filename) {
+ImuParser::ImuParser(std::string filename) {
     std::ifstream myfile;
     myfile.open(filename);
     std::string line;
@@ -50,6 +50,6 @@ CarlaImuParser::CarlaImuParser(std::string filename) {
     myfile.close();
 }
 
-CarlaImuParser::CarlaImuParser() {
+ImuParser::ImuParser() {
 
 }
