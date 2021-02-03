@@ -40,16 +40,20 @@ glm::mat4 imu_carla_to_opengl_coords = glm::transpose(glm::mat4(0.0f,1.0f,0.0f,0
                                                                 -1.0f,0.0f,0.0f,0.0f,
                                                                 0.0f,0.0f,0.0f,1.0f));
 
+struct helpful_debugging_variables{
+    Hole basic_hole;
+    std::vector<Hole> holes;
+} dbg_vars;
+
 class Application : public IWindowEventListener{
 public:
     glm::mat4 world_to_lidar = glm::mat4(1.0f);
     glm::vec3 velocity = glm::vec3(0.0f);
 
 
-    struct debug_vars {
-        Hole basic_hole;
-        std::vector<Hole> holes;
-    };
+    bool recording = false;   //If this is true, the simulation starts to run from the current frame (frameIndex)
+                                    //until the end and every frame is saved to disk
+
     //std::vector<GLuint> textures;
 
     // camera

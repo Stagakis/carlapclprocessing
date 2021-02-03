@@ -38,7 +38,7 @@ void saveFrame(int frameIndex, int numberLength, GLFWwindow* w){
     for(int i = 0; i< numberLength - std::to_string(frameIndex).size(); i++ ){
         zeros += "0";
     }
-    saveImage(std::string("../frame_" + zeros + std::to_string(frameIndex) + ".png").c_str(), w);
+    saveImage(std::string("../recording/frame_" + zeros + std::to_string(frameIndex) + ".png").c_str(), w);
 }
 
 void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i){

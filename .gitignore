@@ -7,3 +7,6 @@ results/
 build/
 .idea/
 *.mp4
+
+recording/*
+!recording/.gitkeep

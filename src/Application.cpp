@@ -93,7 +93,7 @@ int Application::AppMain() {
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
 
         ourShader.setVec3("cameraPos", camera.Position);
-        
+
         //POST PROCESSING
         if(usePostprocessing) {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -120,9 +120,6 @@ int Application::AppMain() {
         else
             pointclouds[frameIndex].draw();
 
-        //saveFrame(frameIndex, 4, window);
-
-
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
         //for(int k=23; k < 24; k++) {
@@ -138,14 +135,20 @@ int Application::AppMain() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        imGuiDrawWindow(debug_vars.basic_hole.radius, debug_vars.basic_hole.depth, clear_color);
+        imGuiDrawWindow(dbg_vars.basic_hole.radius, dbg_vars.basic_hole.depth, clear_color);
         //oImGui::ShowDemoWindow();
-        imGuiOccupancyFactor();
+        //imGuiOccupancyFactor();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwPollEvents();
         WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
+
+        if(recording){
+            saveFrame(frameIndex, 5, window);
+            frameIndex++;
+            if(frameIndex==pointclouds.size()) break;
+        }
         glfwSwapBuffers(window);
     }
     glfwTerminate();
@@ -233,6 +236,8 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
     ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
 
     ImGui::Checkbox("PostProcessing", &usePostprocessing);
+    ImGui::Checkbox("StartRecording", &recording);
+
     if(usePostprocessing){
         //ImGui::SameLine();
         ImGui::InputScalar("IterNumber",      ImGuiDataType_S8,     &iterNumber, &iterNumberStep, NULL, "%d");
