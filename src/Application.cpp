@@ -91,14 +91,9 @@ int Application::AppMain() {
         ourShader.setInt("program_switcher", 1);
         ourShader.setMat4("model", pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
-        ourShader.setFloat("hole_radius", holes[0].radius);
-        ourShader.setFloat("hole_depth", holes[0].depth);
 
-        ourShader.setVec3("hole_center", holes[0].center);
         ourShader.setVec3("cameraPos", camera.Position);
-
-
-
+        
         //POST PROCESSING
         if(usePostprocessing) {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -143,7 +138,7 @@ int Application::AppMain() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        imGuiDrawWindow(basic_hole.radius, basic_hole.depth, clear_color);
+        imGuiDrawWindow(debug_vars.basic_hole.radius, debug_vars.basic_hole.depth, clear_color);
         //oImGui::ShowDemoWindow();
         imGuiOccupancyFactor();
 
@@ -160,7 +155,7 @@ int Application::AppMain() {
 void Application::initialization() {
 
     std::ifstream inFile;
-    inFile.open("../resources/occupancy_factor.csv");
+    inFile.open("../resources_ego1/occupancy_ego1.csv");
     std::string line;
     for (; std::getline(inFile, line);){
         occupancyFactor.push_back(stof(line.substr(line.find(',') + 1, std::string::npos)));
@@ -178,11 +173,13 @@ void Application::initialization() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //imu_data = CarlaImuParser("../resources/imu.txt");
+    //imu_data = ImuParser("../resources/imu.txt");
     transformData = TransformParser("../resources_ego1/camera_metadata.txt", "../resources_ego1/lidar_metadata.txt");
     steeringData = SteeringParser("../resources_ego1/steering_true.txt");
     camera = Camera();
 
+
+    /*
     basic_hole.radius = 5.0f;
     basic_hole.depth = 1.5;
     basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
@@ -196,6 +193,7 @@ void Application::initialization() {
     holes.emplace_back(glm::vec3(110.900932, 0.2, -144.492569), 1.2f, 1.0f);
     holes.emplace_back(glm::vec3(107.900932, 0.2, -150.492569), 1.0f, 1.0f);
     holes.emplace_back(glm::vec3(106.900932, 0.2, -165.492569), 1.5f, 2.0f);
+     */
 
 }
 

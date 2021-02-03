@@ -35,7 +35,7 @@ message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(MyOpengl
         src/main.cpp
         src/Pointcloud.cpp
-        src/CarlaImuParser.cpp
+        src/ImuParser.cpp
         src/WindowEventPublisher.cpp
         src/Camera.cpp
         src/Application.cpp

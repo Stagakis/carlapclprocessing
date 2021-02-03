@@ -8,7 +8,7 @@
 #include <string.h> // memset()
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <CarlaImuParser.h>
+#include <ImuParser.h>
 #include <glm/glm.hpp>
 #include "Camera.h"
 #include "IWindowEventListener.h"
@@ -45,12 +45,11 @@ public:
     glm::mat4 world_to_lidar = glm::mat4(1.0f);
     glm::vec3 velocity = glm::vec3(0.0f);
 
-    // settings
 
-    Hole basic_hole;
-
-    std::vector<Hole> holes;
-
+    struct debug_vars {
+        Hole basic_hole;
+        std::vector<Hole> holes;
+    };
     //std::vector<GLuint> textures;
 
     // camera
@@ -60,7 +59,9 @@ public:
     std::vector<ImageDrawable> images;
     std::vector<Pointcloud> pointclouds;
     std::vector<float> occupancyFactor;
-    CarlaImuParser imu_data;
+
+    //Parsers
+    ImuParser imu_data;
     TransformParser transformData;
     SteeringParser steeringData;
     size_t frameIndex = 0;
