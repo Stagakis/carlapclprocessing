@@ -30,36 +30,22 @@ struct Hole{
 };
 //glm::mat4 Carla_to_Opengl_coordinates = glm::transpose(glm::mat4( 1.0));
 
-glm::mat4 Carla_to_Opengl_coordinates = glm::transpose(glm::mat4(   1.0 , 0.0, 0.0, 0.0,
+static glm::mat4 Carla_to_Opengl_coordinates = glm::transpose(glm::mat4(   1.0 , 0.0, 0.0, 0.0,
                                                                     0.0 , 0.0, -1.0, 0.0,
                                                                     0.0 , 1.0, 0.0, 0.0,
                                                                     0.0 , 0.0, 0.0, 1.0));
 
-glm::mat4 imu_carla_to_opengl_coords = glm::transpose(glm::mat4(0.0f,1.0f,0.0f,0.0f,
+static glm::mat4 imu_carla_to_opengl_coords = glm::transpose(glm::mat4(0.0f,1.0f,0.0f,0.0f,
                                                                 0.0f,0.0f,1.0f,0.0f,
                                                                 -1.0f,0.0f,0.0f,0.0f,
                                                                 0.0f,0.0f,0.0f,1.0f));
 
-struct helpful_debugging_variables{
-    Hole basic_hole;
-    std::vector<Hole> holes;
-} dbg_vars;
 
 class Application : public IWindowEventListener{
 public:
-    glm::mat4 world_to_lidar = glm::mat4(1.0f);
-    glm::vec3 velocity = glm::vec3(0.0f);
-
-
-    bool recording = false;   //If this is true, the simulation starts to run from the current frame (frameIndex)
-                                    //until the end and every frame is saved to disk
-
-    //std::vector<GLuint> textures;
-
-    // camera
     Camera camera;
     GLFWwindow* window;
-    //PointcloudHandler pclHand = PointcloudHandler();
+
     std::vector<ImageDrawable> images;
     std::vector<Pointcloud> pointclouds;
     std::vector<float> occupancyFactor;
@@ -68,11 +54,15 @@ public:
     ImuParser imu_data;
     TransformParser transformData;
     SteeringParser steeringData;
-    size_t frameIndex = 0;
+
+
     glm::vec3 cameraToLidarOffset;
-    //glm::vec3 globalCameraPos = glm::vec3(0.0f,0.0f,0.0f); // TODO delete this after you fix the return to origin.
+    bool recording = false;     //If this is true, the simulation starts to run from the current frame (frameIndex)
+                                //until the end and every frame is saved to disk
+
 
     // timing
+    size_t frameIndex = 0;
     float deltaTime = 0.0f;	// time between current frame and last frame
     float lastFrame = 0.0f;
 
@@ -85,12 +75,12 @@ public:
     unsigned int fbo;
     unsigned int fbTexture;
 
-    void imGuiDrawWindow(float& hole_radius, float& hole_depth, ImVec4 &clear_color);
+    void imGuiDrawWindow(ImVec4 &clear_color);
     void imGuiOccupancyFactor();
 
     void setUpWindowEventHandlers();
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
-    void initialization();
+    void Initialization();
 
     int AppMain();
 };
