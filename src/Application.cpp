@@ -5,7 +5,6 @@
 #include <future>
 #include <iostream>
 
-ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
 
 int Application::AppMain() {
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
@@ -93,16 +92,7 @@ int Application::AppMain() {
         return 0;
         //*/
 
-        // Rendering
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        imGuiDrawWindow(clear_color);
-        //oImGui::ShowDemoWindow();
-        imGuiOccupancyFactor();
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        imgui.draw();
         glfwPollEvents();
         WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
 
@@ -118,7 +108,6 @@ int Application::AppMain() {
 }
 
 void Application::Initialization() {
-
     std::ifstream inFile;
     inFile.open("../resources_ego1/occupancy_ego1.csv");
     std::string line;
@@ -198,36 +187,6 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
     }
 }
 
-void Application::imGuiDrawWindow(ImVec4 &clear_color) {
-    ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
-
-    ImGui::SliderFloat("CameraZoom", &camera.Zoom, 40.0f, 110.0f);
-    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-    ImGui::Text("FrameNumber = %ld", frameIndex);
-    ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
-    ImGui::Text("CameraFront: %f %f %f ", camera.Front[0], camera.Front[1], camera.Front[2]);
-    ImGui::Text("CameraYP: %f %f  ", camera.Yaw, camera.Pitch);
-    ImGui::Text("PclYPR: %f %f %f ", pointclouds[frameIndex].ypr[0], pointclouds[frameIndex].ypr[1],pointclouds[frameIndex].ypr[2]);
-
-    ImGui::Text("transformData.rgbPos: %f %f %f ", transformData.rgbPos[frameIndex][0], transformData.rgbPos[frameIndex][1], transformData.rgbPos[frameIndex][2]);
-
-    ImGui::Checkbox("PostProcessing", &usePostprocessing);
-    ImGui::Checkbox("StartRecording", &recording);
-
-    if(ImGui::Button("TakeSnapshot")){
-        saveFrame(frameIndex, 5, window);
-    }
-
-    if(usePostprocessing){
-        //ImGui::SameLine();
-        ImGui::InputScalar("IterNumber",      ImGuiDataType_S8,     &iterNumber, &iterNumberStep, NULL, "%d");
-    }
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
-}
-
 void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addKeyboardListener(camera);
     WindowEventPublisher::addKeyboardListener(*this);
@@ -236,24 +195,8 @@ void Application::setUpWindowEventHandlers() {
     WindowEventPublisher::addFrameUpdateListener(camera);
 }
 
-void Application::imGuiOccupancyFactor() {
-    ImGui::Begin("Help");   // Create a window called "Hello, world!" and append into it.
-
-    ImGui::Text("OccupancyFactor = %f", occupancyFactor[frameIndex]);
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Dangerous area");
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Be-aware area");
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "semi dangerous area");
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Offroad");
-    ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "Safe area");
-    ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "No Idea");
-
-    ImGui::End();
-}
-
 int main()
 {
-
-
     auto app = Application();
 
     app.window = createGlfwWindow(SCR_WIDTH, SCR_HEIGHT, "CPSoS", false);
