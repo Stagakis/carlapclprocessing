@@ -5,17 +5,21 @@
 #ifndef MYOPENGL_IMGUIMANAGER_H
 #define MYOPENGL_IMGUIMANAGER_H
 
-#include "Application.h"
+
 #include <memory>
+#include <imgui.h>
+class Application;
+
 class ImguiManager {
 public:
-    explicit ImguiManager(Application *app);
-    void newFrame();
-    void endFrame();
-    ~ImguiManager();
+    ImguiManager(Application& app);
+
+    void draw();
+    void imGuiDrawWindow(ImVec4 &clear_color);
+    void imGuiOccupancyFactor();
+
 private:
-    ImguiManager& operator=(const ImguiManager& other);
-    const Application* _app;
+    Application& _app;
 };
 
 

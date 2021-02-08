@@ -17,6 +17,7 @@
 #include "TransformParser.h"
 #include <fstream>
 #include "SteeringParser.h"
+#include "ImguiManager.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//
@@ -45,6 +46,8 @@ class Application : public IWindowEventListener{
 public:
     Camera camera;
     GLFWwindow* window;
+    ImguiManager imgui = ImguiManager(*this);
+    ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f); //clear color of window
 
     std::vector<ImageDrawable> images;
     std::vector<Pointcloud> pointclouds;
@@ -75,14 +78,16 @@ public:
     unsigned int fbo;
     unsigned int fbTexture;
 
-    void imGuiDrawWindow(ImVec4 &clear_color);
-    void imGuiOccupancyFactor();
+    //void imGuiDrawWindow(ImVec4 &clear_color);
+    //void imGuiOccupancyFactor();
 
     void setUpWindowEventHandlers();
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
     void Initialization();
 
     int AppMain();
+
+
 };
 
 
