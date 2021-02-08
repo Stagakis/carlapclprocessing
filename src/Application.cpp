@@ -5,58 +5,20 @@
 #include <future>
 #include <iostream>
 
+ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
 
 int Application::AppMain() {
-    stbi_set_flip_vertically_on_load(true);
-    glEnable(GL_DEPTH_TEST);
-
-    //auto files = glob("../resources/*.ply");
-    auto files = glob("../resources_ego1/*_saliency_segmentation.obj");
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
 
-    std::vector<std::future<void>> futures;
-    std::vector<ImageData> imgData(files.size() );
-    for(size_t i = 1; i < files.size() ; i++) {
-        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_segmentation.obj").size()) + ".png", i));
-    }
-
-    //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
-    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_segmentation.obj").size())  + ".png", 0);
-
-    pointclouds.emplace_back(files[0]);
-    images.emplace_back(imgData[0]);
-    for(int i = 1; i < files.size() - 1; i++) {
-        pointclouds.emplace_back(files[i]);
-        futures[i].get();
-        images.emplace_back(imgData[i]);
-    }
-    pointclouds.emplace_back(files[files.size() - 1]);
-    images.emplace_back(imgData[files.size() - 1]);
-
-    //PREPROCESSING done if the obj is rotated from the steering
-    for(size_t i = 0 ; i < files.size() ; i++) {
-        pointclouds[i].applyYaw(steeringData.angles[i]);
-        pointclouds[i].sendDataToGPU();
-    }
-
-    for(size_t i = 0 ; i < files.size(); i++){
-        pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
-
-        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
-        pointclouds[i].updateModelMatrix();
-    }
-
     ourShader.use();
     ourShader.setInt("texture0",0);
-    ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //auto pcl = Pointcloud("../004489_saliency_binary.obj");
     while (!glfwWindowShouldClose(window))
-    //for(;frameIndex < files.size();frameIndex++)
     {
         cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex] - transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
@@ -182,22 +144,43 @@ void Application::initialization() {
     camera = Camera();
 
 
-    /*
-    basic_hole.radius = 5.0f;
-    basic_hole.depth = 1.5;
-    basic_hole.center = glm::vec3(0.0f, -2.4f, -18.0f);
+    //TEXTURE LOADING
+    stbi_set_flip_vertically_on_load(true);
 
-    holes.emplace_back(glm::vec3(110.900932, 0.2, -100.492569), 1.8f, 1.5f);
-    holes.emplace_back(glm::vec3(106.900932, 0.2, -190.492569), 1.6f, 1.4f);
-    holes.emplace_back(glm::vec3(104.900932, 0.2, -80.492569), 1.5f, 1.3f);
+    //auto files = glob("../resources/*.ply");
+    auto files = glob("../resources_ego1/*_saliency_segmentation.obj");
+    std::vector<std::future<void>> futures;
+    std::vector<ImageData> imgData(files.size() );
+    for(size_t i = 1; i < files.size() ; i++) {
+        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_segmentation.obj").size()) + ".png", i));
+    }
 
-    holes.emplace_back(glm::vec3(106.900932, 0.2, -115.492569), 1.8f, 1.5f);
-    holes.emplace_back(glm::vec3(104.900932, 0.2, -130.492569), 1.4f, 1.0f);
-    holes.emplace_back(glm::vec3(110.900932, 0.2, -144.492569), 1.2f, 1.0f);
-    holes.emplace_back(glm::vec3(107.900932, 0.2, -150.492569), 1.0f, 1.0f);
-    holes.emplace_back(glm::vec3(106.900932, 0.2, -165.492569), 1.5f, 2.0f);
-     */
+    //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
+    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_segmentation.obj").size())  + ".png", 0);
 
+    pointclouds.emplace_back(files[0]);
+    images.emplace_back(imgData[0]);
+    for(int i = 1; i < files.size() - 1; i++) {
+        pointclouds.emplace_back(files[i]);
+        futures[i].get();
+        images.emplace_back(imgData[i]);
+    }
+    pointclouds.emplace_back(files[files.size() - 1]);
+    images.emplace_back(imgData[files.size() - 1]);
+
+    //PREPROCESSING done if the obj is rotated from the steering
+    for(size_t i = 0 ; i < files.size() ; i++) {
+        pointclouds[i].applyYaw(steeringData.angles[i]);
+        pointclouds[i].sendDataToGPU();
+    }
+
+    for(size_t i = 0 ; i < files.size(); i++){
+        pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
+
+        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
+        pointclouds[i].updateModelMatrix();
+    }
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -237,6 +220,10 @@ void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 
 
     ImGui::Checkbox("PostProcessing", &usePostprocessing);
     ImGui::Checkbox("StartRecording", &recording);
+
+    if(ImGui::Button("TakeSnapshot")){
+        saveFrame(frameIndex, 5, window);
+    }
 
     if(usePostprocessing){
         //ImGui::SameLine();
