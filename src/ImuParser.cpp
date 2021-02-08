@@ -1,7 +1,3 @@
-//
-// Created by stagakis on 26/8/20.
-//
-
 #include "ImuParser.h"
 #include <iostream>
 #include <fstream>

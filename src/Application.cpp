@@ -97,7 +97,7 @@ int Application::AppMain() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        imGuiDrawWindow(dbg_vars.basic_hole.radius, dbg_vars.basic_hole.depth, clear_color);
+        imGuiDrawWindow(clear_color);
         //oImGui::ShowDemoWindow();
         imGuiOccupancyFactor();
 
@@ -117,7 +117,7 @@ int Application::AppMain() {
     return 0;
 }
 
-void Application::initialization() {
+void Application::Initialization() {
 
     std::ifstream inFile;
     inFile.open("../resources_ego1/occupancy_ego1.csv");
@@ -198,18 +198,12 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
     }
 }
 
-void Application::imGuiDrawWindow(float &hole_radius, float &hole_depth, ImVec4 &clear_color) {
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-
+void Application::imGuiDrawWindow(ImVec4 &clear_color) {
     ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
 
-    //ImGui::Text("This is some useful text.");   // Display some text (you can use a format strings too)
     ImGui::SliderFloat("CameraZoom", &camera.Zoom, 40.0f, 110.0f);
-    ImGui::SliderFloat("Radius", &hole_radius, 3.0f, 10.0f);
-    ImGui::SliderFloat("Depth", &hole_depth, 3.0f, 10.0f);
     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-    //ImGui::SameLine();
     ImGui::Text("FrameNumber = %ld", frameIndex);
     ImGui::Text("CameraPos: %f %f %f ", camera.Position[0], camera.Position[1], camera.Position[2]);
     ImGui::Text("CameraFront: %f %f %f ", camera.Front[0], camera.Front[1], camera.Front[2]);
@@ -292,6 +286,6 @@ int main()
 
     app.setUpWindowEventHandlers();
 
-    app.initialization();
+    app.Initialization();
     return app.AppMain();
 }
