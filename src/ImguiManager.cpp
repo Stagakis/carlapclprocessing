@@ -7,6 +7,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "Application.h"
+#include "helpers.h"
+
 
 
 ImguiManager::ImguiManager(Application & app): _app(app) {

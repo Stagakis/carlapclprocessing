@@ -39,7 +39,7 @@ add_executable(MyOpengl
         src/WindowEventPublisher.cpp
         src/Camera.cpp
         src/Application.cpp
-        src/ImageDrawable.cpp src/TransformParser.cpp include/TransformParser.h deps/stb/stb_image_write.h src/SteeringParser.cpp include/SteeringParser.h src/ImguiManager.cpp include/ImguiManager.h)
+        src/ImageDrawable.cpp src/TransformParser.cpp include/TransformParser.h deps/stb/stb_image_write.h src/SteeringParser.cpp include/SteeringParser.h src/ImguiManager.cpp include/ImguiManager.h src/helpers.cpp)
 
 target_compile_options(MyOpengl PRIVATE -Wall -Wextra -pedantic-errors)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
