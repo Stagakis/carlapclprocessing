@@ -137,7 +137,7 @@ int Application::AppMain() {
         ImGui::NewFrame();
         imGuiDrawWindow(dbg_vars.basic_hole.radius, dbg_vars.basic_hole.depth, clear_color);
         //oImGui::ShowDemoWindow();
-        //imGuiOccupancyFactor();
+        imGuiOccupancyFactor();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -262,7 +262,7 @@ void Application::imGuiOccupancyFactor() {
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Dangerous area");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Be-aware area");
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "semi dangerous area");
-    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Offroad Danger");
+    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Offroad");
     ImGui::TextColored(ImVec4(0.0f, 0.0f, 1.0f, 1.0f), "Safe area");
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 1.0f, 1.0f), "No Idea");
 
