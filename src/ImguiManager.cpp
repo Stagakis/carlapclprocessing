@@ -48,7 +48,7 @@ void ImguiManager::imGuiDrawWindow(ImVec4 &clear_color) {
 void ImguiManager::imGuiOccupancyFactor() {
     ImGui::Begin("Help");   // Create a window called "Hello, world!" and append into it.
 
-    ImGui::Text("OccupancyFactor = %f", _app.occupancyFactor[_app.frameIndex]);
+    //ImGui::Text("OccupancyFactor = %f", _app.occupancyFactor[_app.frameIndex]);
     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Dangerous area");
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Be-aware area");
     ImGui::TextColored(ImVec4(0.0f, 1.0f, 1.0f, 1.0f), "semi dangerous area");
