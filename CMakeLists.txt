@@ -8,6 +8,8 @@ if (WIN32)
         add_compile_definitions(WINDOWS)
 endif (WIN32)
 
+find_package(TBB REQUIRED)
+
 ########### GLFW import code
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -60,7 +62,7 @@ else()
         target_compile_options(MyOpengl PRIVATE -Wall -pedantic-errors)
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-target_link_libraries(MyOpengl glfw glad glm imgui)
+target_link_libraries(MyOpengl glfw glad glm imgui tbb)
 
 #Create links to the shader files
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/shaders/fragmentShader.shader ${CMAKE_CURRENT_BINARY_DIR}/fragmentShader.shader)
