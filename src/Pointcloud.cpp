@@ -89,3 +89,7 @@ void Pointcloud::sendDataToGPU() {
     glBindVertexArray(0);
 }
 
+Pointcloud::Pointcloud() {
+
+}
+

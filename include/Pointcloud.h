@@ -33,6 +33,7 @@ struct Point{
 
 class Pointcloud : public Drawable{
     public:
+        Pointcloud();
         std::vector<Point> points;
         std::vector<glm::vec3> colors;
         void draw() override;

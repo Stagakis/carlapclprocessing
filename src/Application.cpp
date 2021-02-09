@@ -5,6 +5,10 @@
 #include <future>
 #include <iostream>
 #include <filesystem>
+#include <algorithm>
+#include <execution>
+#include <utility>
+
 namespace fs = std::filesystem;
 
 int Application::AppMain() {
@@ -110,7 +114,7 @@ int Application::AppMain() {
 void Application::Initialization() {
 
     std::string resources_folder = "../resources_ego0/";
-    std::string ext(".obj");
+    
     /*
     std::ifstream inFile;
     inFile.open(resources_folder + "occupancy_ego1.csv");
@@ -153,10 +157,9 @@ void Application::Initialization() {
         
     }
 
+    std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
+    std::vector<std::string> image_files = glob(resources_folder + "*.png");
 
-
-    auto files = glob(resources_folder + "*_saliency_segmentation.obj");
-    auto image_files = glob(resources_folder + "*.png");
     /*//
     std::vector<std::string> files_halved;
     for(int i = 0 ; i < files.size() - 150; i++){
@@ -169,30 +172,23 @@ void Application::Initialization() {
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
     std::cout << "Loading images........." << "\n";
-    files.resize(10);
-    for(size_t i = 1; i < files.size() ; i++) {
-        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[i].substr(0, file_namestems[i].size() - obj_name_ending.size()) + ".png", i));
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
+    const int batch_size = 100;
+    for(int batch = 0; batch < files.size()/batch_size; batch++ ) {
+        for (size_t i = batch_size*batch; i < batch_size*(batch + 1); i++) {
+            futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
+        }
+        for(int i = batch_size*batch; i < batch_size*(batch + 1); i++) {
+            futures[i].get();
+            images.emplace_back(imgData[i]);
+        }
     }
-
-    //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
-    //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[0].substr(0, file_namestems[0].size() - obj_name_ending.size()) + ".png", i));
-
-    loadTexture(&imgData, image_files[0], 0);
-
-    pointclouds.emplace_back(files[0]);
-    images.emplace_back(imgData[0]);
-    for(int i = 1; i < files.size() - 1; i++) {
-        std::cout << i << "\n";
-
-        pointclouds.emplace_back(files[i]);
-        futures[i].get();
-        images.emplace_back(imgData[i]);
-    }
-    pointclouds.emplace_back(files[files.size() - 1]);
-    images.emplace_back(imgData[files.size() - 1]);
     std::cout << "Finished loading images" << "\n";
+
+    std::cout << "Loading OBJs........." << "\n";
+    pointclouds.resize(files.size());
+    std::transform(std::execution::par_unseq, files.begin(), files.end(), pointclouds.begin(),
+                   [](std::string file) -> Pointcloud { return Pointcloud(std::move(file)); });
+    std::cout << "Finished loading OBJs" << "\n";
 
     //PREPROCESSING done if the obj is rotated from the steering
     for(size_t i = 0 ; i < files.size() ; i++) {
