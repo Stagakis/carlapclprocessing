@@ -4,7 +4,6 @@
 #include "helpers.h"
 #include <future>
 #include <iostream>
-
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -111,8 +110,8 @@ int Application::AppMain() {
 
 void Application::Initialization() {
 
-    std::string resources_folder = "../resources_steering/";
-
+    std::string resources_folder = "../resources_ego0/";
+    std::string ext(".obj");
     /*
     std::ifstream inFile;
     inFile.open(resources_folder + "occupancy_ego1.csv");
@@ -143,24 +142,23 @@ void Application::Initialization() {
     //TEXTURE LOADING
     stbi_set_flip_vertically_on_load(true);
 
-    //auto files = glob("../resources/*.ply");
+    std::vector<std::string> file_paths;
+    std::vector<std::string> file_namestems;
 
-    std::string path("../src/");
-    std::string ext(".cpp");
-    for (auto& p : fs::recursive_directory_iterator(path))
+    for (auto& p : fs::recursive_directory_iterator(resources_folder))
     {
-        if (p.path().extension() == ext)
-            std::cout << p.path() << '\n' 
-            << p.path().stem() << '\n'
-            << p.path().stem().string() << '\n'
-            << "==========" << '\n';
+        if (p.path().extension() == ext) {
+            file_paths.push_back(p.path().string());
+            file_namestems.push_back(p.path().stem().string());
+        }
+        
     }
 
 
 
     auto files = glob(resources_folder + "*_saliency_segmentation.obj");
-
-    //*
+    files = file_paths;
+    /*//
     std::vector<std::string> files_halved;
     for(int i = 0 ; i < files.size() - 150; i++){
         files_halved.push_back(files[i]);
@@ -168,25 +166,30 @@ void Application::Initialization() {
     files = files_halved;
     //*/
 
+    auto obj_name_ending = std::string("_saliency_segmentation");
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
+    std::cout << "Loading images........." << "\n";
     for(size_t i = 1; i < files.size() ; i++) {
         //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - std::string("_saliency_segmentation.obj").size()) + ".png", i));
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[i].substr(0, file_namestems[i].size() - obj_name_ending.size()) + ".png", i));
     }
 
     //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
-    loadTexture(&imgData, files[0].substr(0, files[0].size() - std::string("_saliency_segmentation.obj").size())  + ".png", 0);
+    loadTexture(&imgData, resources_folder + "0" + file_namestems[0].substr(0, file_namestems[0].size()- obj_name_ending.size()) + ".png", 0);
 
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
     for(int i = 1; i < files.size() - 1; i++) {
+        std::cout << i << "\n";
+
         pointclouds.emplace_back(files[i]);
         futures[i].get();
         images.emplace_back(imgData[i]);
     }
     pointclouds.emplace_back(files[files.size() - 1]);
     images.emplace_back(imgData[files.size() - 1]);
+    std::cout << "Finished loading images" << "\n";
 
     //PREPROCESSING done if the obj is rotated from the steering
     for(size_t i = 0 ; i < files.size() ; i++) {
