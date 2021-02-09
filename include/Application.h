@@ -62,7 +62,7 @@ public:
 
 
     glm::vec3 cameraToLidarOffset;
-    bool recording = true;     //If this is true, the simulation starts to run from the current frame (frameIndex)
+    bool recording = false;     //If this is true, the simulation starts to run from the current frame (frameIndex)
                                 //until the end and every frame is saved to disk
 
 

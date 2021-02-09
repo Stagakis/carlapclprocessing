@@ -170,6 +170,7 @@ void Application::Initialization() {
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
     std::cout << "Loading images........." << "\n";
+    files.resize(10);
     for(size_t i = 1; i < files.size() ; i++) {
         //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
         futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[i].substr(0, file_namestems[i].size() - obj_name_ending.size()) + ".png", i));
