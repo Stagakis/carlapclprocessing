@@ -114,7 +114,7 @@ int Application::AppMain() {
 void Application::Initialization() {
 
     std::string resources_folder = "../resources_ego0/";
-    
+
     /*
     std::ifstream inFile;
     inFile.open(resources_folder + "occupancy_ego1.csv");
@@ -145,7 +145,9 @@ void Application::Initialization() {
     //TEXTURE LOADING
     stbi_set_flip_vertically_on_load(true);
 
-    std::vector<std::string> file_paths;
+/*    std::vector<std::string> file_paths;
+ *    std::string resources_folder = ".obj";
+
     std::vector<std::string> file_namestems;
 
     for (auto& p : fs::recursive_directory_iterator(resources_folder))
@@ -155,7 +157,7 @@ void Application::Initialization() {
             file_namestems.push_back(p.path().stem().string());
         }
         
-    }
+    }*/
 
     std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
     std::vector<std::string> image_files = glob(resources_folder + "*.png");
@@ -171,8 +173,8 @@ void Application::Initialization() {
     auto obj_name_ending = std::string("_saliency_segmentation");
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
-    std::cout << "Loading images........." << "\n";
-    const int batch_size = 100;
+    std::cout << "Loading images........." << "\n";   //VERY VERY UGLY
+    const int batch_size = 50;
     for(int batch = 0; batch < files.size()/batch_size; batch++ ) {
         for (size_t i = batch_size*batch; i < batch_size*(batch + 1); i++) {
             futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
@@ -181,6 +183,11 @@ void Application::Initialization() {
             futures[i].get();
             images.emplace_back(imgData[i]);
         }
+    }
+    for(int i = futures.size(); i < files.size(); i ++) { //Get the rest
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
+        futures[i].get();
+        images.emplace_back(imgData[i]);
     }
     std::cout << "Finished loading images" << "\n";
 
@@ -198,10 +205,10 @@ void Application::Initialization() {
 
     for(size_t i = 0 ; i < files.size(); i++){
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
-
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
+    
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
