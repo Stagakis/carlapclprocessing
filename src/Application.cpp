@@ -107,12 +107,17 @@ int Application::AppMain() {
 }
 
 void Application::Initialization() {
+
+    std::string resources_folder = "../resources_steering/";
+
+    /*
     std::ifstream inFile;
-    inFile.open("../resources_ego1/occupancy_ego1.csv");
+    inFile.open(resources_folder + "occupancy_ego1.csv");
     std::string line;
     for (; std::getline(inFile, line);){
         occupancyFactor.push_back(stof(line.substr(line.find(',') + 1, std::string::npos)));
     }
+    */
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -127,8 +132,8 @@ void Application::Initialization() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //imu_data = ImuParser("../resources/imu.txt");
-    transformData = TransformParser("../resources_ego1/camera_metadata.txt", "../resources_ego1/lidar_metadata.txt");
-    steeringData = SteeringParser("../resources_ego1/steering_true.txt");
+    transformData = TransformParser(resources_folder + "camera_metadata.txt", resources_folder + "lidar_metadata.txt");
+    steeringData = SteeringParser(resources_folder + "steering_true.txt");
     camera = Camera();
 
 
@@ -136,7 +141,16 @@ void Application::Initialization() {
     stbi_set_flip_vertically_on_load(true);
 
     //auto files = glob("../resources/*.ply");
-    auto files = glob("../resources_ego1/*_saliency_segmentation.obj");
+    auto files = glob(resources_folder + "*_saliency_segmentation.obj");
+
+    //*
+    std::vector<std::string> files_halved;
+    for(int i = 0 ; i < files.size() - 150; i++){
+        files_halved.push_back(files[i]);
+    }
+    files = files_halved;
+    //*/
+
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
     for(size_t i = 1; i < files.size() ; i++) {
