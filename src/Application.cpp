@@ -173,7 +173,7 @@ void Application::Initialization() {
     auto obj_name_ending = std::string("_saliency_segmentation");
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
-    std::cout << "Loading images........." << "\n";   //VERY VERY UGLY
+    std::cout << "Loading images........." << "\n";   //TODO VERY VERY UGLY PLEASE FIX IT
     const int batch_size = 50;
     for(int batch = 0; batch < files.size()/batch_size; batch++ ) {
         for (size_t i = batch_size*batch; i < batch_size*(batch + 1); i++) {
@@ -184,7 +184,7 @@ void Application::Initialization() {
             images.emplace_back(imgData[i]);
         }
     }
-    for(int i = futures.size(); i < files.size(); i ++) { //Get the rest
+    for(int i = (files.size()/batch_size) * batch_size; i < files.size(); i ++) { //Get the rest
         futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
         futures[i].get();
         images.emplace_back(imgData[i]);
@@ -208,7 +208,7 @@ void Application::Initialization() {
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
-    
+
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
