@@ -4,7 +4,9 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <glob.h> // glob(), globfree()
+#ifndef WINDOWS
+    #include <glob.h> // glob(), globfree()
+#endif
 #include <string.h> // memset()
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
