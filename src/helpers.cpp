@@ -82,6 +82,7 @@ void save2obj(const std::string filename, std::vector<Point> points){
     myfile.close();
 }
 
+#ifndef WINDOWS
 std::vector<std::string> glob(const std::string &pattern){
     using namespace std;
 
@@ -110,7 +111,12 @@ std::vector<std::string> glob(const std::string &pattern){
     // done
     return filenames;
 }
+#else
+std::vector<std::string> glob(const std::string& pattern) {
+    return std::vector<std::string>();
+}
 
+#endif
 
 GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen){
     glfwInit();

@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(MyOpengl)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+if (WIN32)
+        add_compile_definitions(WINDOWS)
+endif (WIN32)
 
 ########### GLFW import code
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -22,15 +28,14 @@ add_library(imgui ${IMGUI_PATH}/imgui.cpp
         ${IMGUI_PATH}/imgui_draw.cpp
         ${IMGUI_PATH}/imgui_demo.cpp
         ${IMGUI_PATH}/imgui_widgets.cpp
-        ${IMGUI_PATH}/examples/imgui_impl_glfw.cpp
-        ${IMGUI_PATH}/examples/imgui_impl_opengl3.cpp)
+        ${IMGUI_PATH}/imgui_tables.cpp
+        ${IMGUI_PATH}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_PATH}/backends/imgui_impl_opengl3.cpp)
 target_compile_definitions(imgui PUBLIC -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
-target_include_directories(imgui PUBLIC ${IMGUI_PATH}/ ${IMGUI_PATH}/examples/)
+target_include_directories(imgui PUBLIC ${IMGUI_PATH}/ ${IMGUI_PATH}/examples/ ${IMGUI_PATH}/backends/)
 target_link_libraries(imgui glad glfw)
 
 
-message(STATUS ${CMAKE_CURRENT_BINARY_DIR})
-message(STATUS ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(MyOpengl
         src/main.cpp
@@ -39,11 +44,21 @@ add_executable(MyOpengl
         src/WindowEventPublisher.cpp
         src/Camera.cpp
         src/Application.cpp
-        src/ImageDrawable.cpp src/TransformParser.cpp include/TransformParser.h deps/stb/stb_image_write.h src/SteeringParser.cpp include/SteeringParser.h src/ImguiManager.cpp include/ImguiManager.h src/helpers.cpp)
+        src/ImageDrawable.cpp 
+        src/TransformParser.cpp 
+        src/SteeringParser.cpp 
+        src/ImguiManager.cpp 
+        src/helpers.cpp)
 
-target_compile_options(MyOpengl PRIVATE -Wall -Wextra -pedantic-errors)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+        message(STATUS "GCC detected, adding compile flags")
+        target_compile_options(MyOpengl PRIVATE -Wall -Wextra -pedantic-errors)
+else()
+        target_compile_options(MyOpengl PRIVATE -Wall -pedantic-errors)
+endif(CMAKE_COMPILER_IS_GNUCXX)
 
 target_link_libraries(MyOpengl glfw glad glm imgui)
 

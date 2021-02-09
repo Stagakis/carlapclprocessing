@@ -5,6 +5,9 @@
 #include <future>
 #include <iostream>
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 int Application::AppMain() {
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
     ShaderLoader postProcessShader("vertexShader.shader", "KNearest_fragment.shader");
@@ -141,6 +144,20 @@ void Application::Initialization() {
     stbi_set_flip_vertically_on_load(true);
 
     //auto files = glob("../resources/*.ply");
+
+    std::string path("../src/");
+    std::string ext(".cpp");
+    for (auto& p : fs::recursive_directory_iterator(path))
+    {
+        if (p.path().extension() == ext)
+            std::cout << p.path() << '\n' 
+            << p.path().stem() << '\n'
+            << p.path().stem().string() << '\n'
+            << "==========" << '\n';
+    }
+
+
+
     auto files = glob(resources_folder + "*_saliency_segmentation.obj");
 
     //*

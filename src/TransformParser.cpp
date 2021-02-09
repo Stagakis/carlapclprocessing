@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 TransformParser::TransformParser(std::string filename) {
     std::ifstream myfile;

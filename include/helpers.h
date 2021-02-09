@@ -2,7 +2,9 @@
 #define MYOPENGL_HELPERS_H
 
 #include <vector>
-#include <glob.h>
+#ifndef WINDOWS
+	#include <glob.h>
+#endif
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "iostream"
