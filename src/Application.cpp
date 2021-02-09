@@ -17,7 +17,6 @@ int Application::AppMain() {
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //auto pcl = Pointcloud("../004489_saliency_binary.obj");
     while (!glfwWindowShouldClose(window))
     {
         cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex] - transformData.lidarPos[frameIndex] , 1.0f);
@@ -157,7 +156,7 @@ void Application::Initialization() {
 
 
     auto files = glob(resources_folder + "*_saliency_segmentation.obj");
-    files = file_paths;
+    auto image_files = glob(resources_folder + "*.png");
     /*//
     std::vector<std::string> files_halved;
     for(int i = 0 ; i < files.size() - 150; i++){
@@ -173,11 +172,14 @@ void Application::Initialization() {
     files.resize(10);
     for(size_t i = 1; i < files.size() ; i++) {
         //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, files[i].substr(0, files[i].size() - 4) + ".png", i));
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[i].substr(0, file_namestems[i].size() - obj_name_ending.size()) + ".png", i));
+        //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[i].substr(0, file_namestems[i].size() - obj_name_ending.size()) + ".png", i));
+        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
     }
 
     //loadTexture(&imgData, files[0].substr(0, files[0].size() - 4)  + ".png", 0);
-    loadTexture(&imgData, resources_folder + "0" + file_namestems[0].substr(0, file_namestems[0].size()- obj_name_ending.size()) + ".png", 0);
+    //futures.push_back(std::async(std::launch::async, loadTexture, &imgData, resources_folder + "0" + file_namestems[0].substr(0, file_namestems[0].size() - obj_name_ending.size()) + ".png", i));
+
+    loadTexture(&imgData, image_files[0], 0);
 
     pointclouds.emplace_back(files[0]);
     images.emplace_back(imgData[0]);
@@ -217,7 +219,7 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
         frameIndex = std::min(pointclouds.size() - 1, frameIndex + 1);
     }
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
-        frameIndex = std::max((size_t)0 ,  frameIndex-1);
+        frameIndex = (size_t)std::max(0 , (int(frameIndex))-1);
     }
 }
 
