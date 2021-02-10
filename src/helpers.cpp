@@ -6,6 +6,8 @@
 
 #include <stb_image_write.h>
 #include "helpers.h"
+#include <filesystem>
+namespace fs = std::filesystem;
 
 void saveImage(const char* filepath, GLFWwindow* w){
     int width, height;
@@ -112,10 +114,16 @@ std::vector<std::string> glob(const std::string &pattern){
     return filenames;
 }
 #else
-std::vector<std::string> glob(const std::string& pattern) {
-    return std::vector<std::string>();
+std::vector<std::string> glob(const std::string& folder, const std::string& extension) {
+    std::vector<std::string> file_paths;
+    for (auto& p : fs::recursive_directory_iterator(folder))
+    {
+        if (p.path().extension() == extension) {
+            file_paths.push_back(p.path().string());
+        }
+    }
+    return file_paths;
 }
-
 #endif
 
 GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen){

@@ -27,7 +27,11 @@ void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole);
 
 void save2obj(const std::string filename, std::vector<Point> points);
 
+#ifndef WINDOWS
 std::vector<std::string> glob(const std::string &pattern);
+#else
+std::vector<std::string> glob(const std::string& folder, const std::string& extension);
+#endif
 
 GLFWwindow* createGlfwWindow(int width, int height, std::string name, bool fullscreen);
 
