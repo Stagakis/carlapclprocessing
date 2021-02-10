@@ -115,15 +115,6 @@ void Application::Initialization() {
 
     std::string resources_folder = "../resources_ego0/";
 
-    /*
-    std::ifstream inFile;
-    inFile.open(resources_folder + "occupancy_ego1.csv");
-    std::string line;
-    for (; std::getline(inFile, line);){
-        occupancyFactor.push_back(stof(line.substr(line.find(',') + 1, std::string::npos)));
-    }
-    */
-
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glGenTextures(1, &fbTexture);
@@ -137,6 +128,14 @@ void Application::Initialization() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //imu_data = ImuParser("../resources/imu.txt");
+    /*
+    std::ifstream inFile;
+    inFile.open(resources_folder + "occupancy_ego1.csv");
+    std::string line;
+    for (; std::getline(inFile, line);){
+        occupancyFactor.push_back(stof(line.substr(line.find(',') + 1, std::string::npos)));
+    }
+    */
     transformData = TransformParser(resources_folder + "camera_metadata.txt", resources_folder + "lidar_metadata.txt");
     steeringData = SteeringParser(resources_folder + "steering_true.txt");
     camera = Camera();
