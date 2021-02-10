@@ -145,29 +145,19 @@ void Application::Initialization() {
     //TEXTURE LOADING
     stbi_set_flip_vertically_on_load(true);
 
-/*    std::vector<std::string> file_paths;
- *    std::string resources_folder = ".obj";
-
-    std::vector<std::string> file_namestems;
-
-    for (auto& p : fs::recursive_directory_iterator(resources_folder))
-    {
-        if (p.path().extension() == ext) {
-            file_paths.push_back(p.path().string());
-            file_namestems.push_back(p.path().stem().string());
-        }
-        
-    }*/
-
+#ifndef WINDOWS
     std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
     std::vector<std::string> image_files = glob(resources_folder + "*.png");
-
+#else
+    std::vector<std::string> files = glob(resources_folder, ".obj");
+    std::vector<std::string> image_files = glob(resources_folder, ".png");
+#endif
     /*//
-    std::vector<std::string> files_halved;
+    std::vector<std::string> files_reduced;
     for(int i = 0 ; i < files.size() - 150; i++){
-        files_halved.push_back(files[i]);
+        files_reduced.push_back(files[i]);
     }
-    files = files_halved;
+    files = files_reduced;
     //*/
 
     auto obj_name_ending = std::string("_saliency_segmentation");
@@ -191,7 +181,7 @@ void Application::Initialization() {
     }
     std::cout << "Finished loading images" << "\n";
 
-    std::cout << "Loading OBJs........." << "\n";
+    std::cout << "Loading OBJs..........." << "\n";
     pointclouds.resize(files.size());
     std::transform(std::execution::par_unseq, files.begin(), files.end(), pointclouds.begin(),
                    [](std::string file) -> Pointcloud { return Pointcloud(std::move(file)); });
