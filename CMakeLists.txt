@@ -29,7 +29,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps/glfw/)
 
 ########### GLAD import (manual)
 set(GLAD_PATH ${CMAKE_CURRENT_SOURCE_DIR}/deps/glad)
-add_library(glad ${GLAD_PATH}/src/glad.c )
+add_library(glad ${GLAD_PATH}/src/glad.c)
 target_include_directories(glad PUBLIC ${GLAD_PATH}/include/)
 
 ########### GLM import
@@ -60,7 +60,7 @@ add_executable(MyOpengl
         src/SteeringParser.cpp 
         src/ImguiManager.cpp 
         src/helpers.cpp
-        )
+        src/Ego.cpp)
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)
