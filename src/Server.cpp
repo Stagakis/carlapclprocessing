@@ -1,3 +1,10 @@
 #include "Server.h"
 
-Server::Server(std::vector<Ego> &_vehicles):vehicles(_vehicles) {}
+void Server::addObstacle(std::vector<Point>& points, timing tim) {
+
+}
+
+std::vector<obstacle> &Server::GetObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot) {
+    auto test = std::vector<obstacle>();
+    return test;
+}

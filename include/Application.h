@@ -70,7 +70,6 @@ public:
     // Ego vehicles and server
     std::vector<Ego> vehicles;
     int active_vehicle = 0;
-    Server server = Server(vehicles);
 
     // timing
     size_t frameIndex = 0;
