@@ -2,15 +2,9 @@
 #include "WindowEventPublisher.h"
 #include "ShaderLoader.h"
 #include "helpers.h"
-#include <future>
 #include <iostream>
-#include <filesystem>
 #include <algorithm>
-#include <execution>
-#include <utility>
 #include "Ego.h"
-
-namespace fs = std::filesystem;
 
 int Application::AppMain() {
     ShaderLoader ourShader("vertexShader.shader", "fragmentShader.shader");
@@ -25,6 +19,7 @@ int Application::AppMain() {
     while (!glfwWindowShouldClose(window))
     {
         auto& vehicle = vehicles[active_vehicle];
+
         cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
@@ -114,8 +109,6 @@ int Application::AppMain() {
 }
 
 void Application::Initialization() {
-
-
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glGenTextures(1, &fbTexture);
@@ -130,13 +123,13 @@ void Application::Initialization() {
     //TEXTURE LOADING
     stbi_set_flip_vertically_on_load(true);
 
-
-
-
     camera = Camera();
 
     std::string resources_folder = "../resources_ego0/";
+
     vehicles.emplace_back(resources_folder);
+    //vehicles.emplace_back("../resources_ego1/");
+
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -151,6 +144,9 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
     }
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
         frameIndex = (size_t)std::max(0 , (int(frameIndex))-1);
+    }
+    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
+        active_vehicle = (active_vehicle + 1)%vehicles.size();
     }
 }
 
