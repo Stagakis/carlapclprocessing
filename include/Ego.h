@@ -16,6 +16,7 @@ public:
     ImuParser imu_data;                     //Deprecated use
     TransformParser transformData;
     SteeringParser steeringData;
+    void checkForObstacles(int index, int threshold);
 
     Ego(std::string resources_folder);
 

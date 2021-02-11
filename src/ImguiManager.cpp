@@ -27,7 +27,8 @@ void ImguiManager::imGuiDrawWindow(ImVec4 &clear_color) {
     ImGui::Text("CameraPos: %f %f %f ", _app.camera.Position[0], _app.camera.Position[1], _app.camera.Position[2]);
     ImGui::Text("CameraFront: %f %f %f ", _app.camera.Front[0], _app.camera.Front[1], _app.camera.Front[2]);
     ImGui::Text("CameraYP: %f %f  ", _app.camera.Yaw, _app.camera.Pitch);
-    ImGui::Text("PclYPR: %f %f %f ", vehicle.pointclouds[_app.frameIndex].ypr[0], vehicle.pointclouds[_app.frameIndex].ypr[1], vehicle.pointclouds[_app.frameIndex].ypr[2]);
+    ImGui::Text("LidarSensorYPR: %f %f %f ", vehicle.pointclouds[_app.frameIndex].ypr[0], vehicle.pointclouds[_app.frameIndex].ypr[1], vehicle.pointclouds[_app.frameIndex].ypr[2]);
+    ImGui::Text("LidarSensorXYZ: %f %f %f ", vehicle.pointclouds[_app.frameIndex].translation[0], vehicle.pointclouds[_app.frameIndex].translation[1], vehicle.pointclouds[_app.frameIndex].translation[2]);
 
     ImGui::Text("transformData.rgbPos: %f %f %f ", vehicle.transformData.rgbPos[_app.frameIndex][0], vehicle.transformData.rgbPos[_app.frameIndex][1], vehicle.transformData.rgbPos[_app.frameIndex][2]);
 
@@ -35,7 +36,7 @@ void ImguiManager::imGuiDrawWindow(ImVec4 &clear_color) {
     ImGui::Checkbox("StartRecording", &_app.recording);
 
     if(ImGui::Button("TakeSnapshot")){
-        //saveFrame(_app.frameIndex, 5, _app.window);
+       saveFrame(_app.frameIndex, 5, _app.window);
     }
 
     if(_app.usePostprocessing){

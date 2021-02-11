@@ -4,6 +4,17 @@
 #include <execution>
 #include <future>
 
+void Ego::checkForObstacles(int index, int threshold) {
+    for (int i = 0; i < pointclouds[index].points.size(); i++) {
+        auto& p = pointclouds[index].points[i];
+        if (p.y < threshold) {
+            std::cout << "hole found " << p.y << std::endl;
+            break;
+        }
+
+    }
+}
+
 Ego::Ego(std::string resources_folder) {
     //imu_data = ImuParser("../resources/imu.txt");
     /*
@@ -26,9 +37,9 @@ Ego::Ego(std::string resources_folder) {
     std::vector<std::string> image_files = glob(resources_folder, ".png");
 #endif
 
-    /*//
+    //*//
     std::vector<std::string> files_reduced;
-    for(int i = 0 ; i < files.size() - 150; i++){
+    for(int i = 0 ; i < files.size() - 300; i++){
         files_reduced.push_back(files[i]);
     }
     files = files_reduced;
