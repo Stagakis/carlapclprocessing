@@ -24,8 +24,9 @@ int Application::AppMain() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     while (!glfwWindowShouldClose(window))
     {
-        cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(transformData.rgbPos[frameIndex] - transformData.lidarPos[frameIndex] , 1.0f);
-        camera.SetFollowingObject(&pointclouds[frameIndex], cameraToLidarOffset);
+        auto& vehicle = vehicles[active_vehicle];
+        cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
+        camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -51,11 +52,11 @@ int Application::AppMain() {
 
         ourShader.setInt("program_switcher", 0);
         glDisable(GL_DEPTH_TEST);
-        images[frameIndex].draw();
+        vehicle.images[frameIndex].draw();
         glEnable(GL_DEPTH_TEST);
 
         ourShader.setInt("program_switcher", 1);
-        ourShader.setMat4("model", pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
+        ourShader.setMat4("model", vehicle.pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
 
         ourShader.setVec3("cameraPos", camera.Position);
@@ -63,7 +64,7 @@ int Application::AppMain() {
         //POST PROCESSING
         if(usePostprocessing) {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-            pointclouds[frameIndex].draw();
+            vehicle.pointclouds[frameIndex].draw();
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             postProcessShader.use();
             postProcessShader.setInt("program_switcher", 0);
@@ -74,17 +75,17 @@ int Application::AppMain() {
             glDisable(GL_BLEND);
 
             for(int i = 0; i < iterNumber ; ++i)
-                images[frameIndex].draw(fbTexture);
+                vehicle.images[frameIndex].draw(fbTexture);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glEnable(GL_BLEND);
             postProcessShader.setFloat("alpha_value", 0.5f);
 
-            images[frameIndex].draw(fbTexture);
+            vehicle.images[frameIndex].draw(fbTexture);
             glEnable(GL_DEPTH_TEST);
         }
         else
-            pointclouds[frameIndex].draw();
+            vehicle.pointclouds[frameIndex].draw();
 
         /*//  //   OUTPUT FILE FOR MATLAB CODE
         for(int k=0 ; k < files.size(); k++) {
@@ -104,7 +105,7 @@ int Application::AppMain() {
         if(recording){
             saveFrame(frameIndex, 5, window);
             frameIndex++;
-            if(frameIndex==pointclouds.size()) break;
+            if(frameIndex==vehicle.pointclouds.size()) break;
         }
         glfwSwapBuffers(window);
     }
@@ -114,7 +115,6 @@ int Application::AppMain() {
 
 void Application::Initialization() {
 
-    std::string resources_folder = "../resources_ego0/";
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -127,79 +127,16 @@ void Application::Initialization() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //TEXTURE LOADING
+    stbi_set_flip_vertically_on_load(true);
 
 
 
 
     camera = Camera();
 
-    //TODO delete
-    transformData = TransformParser(resources_folder + "camera_metadata.txt", resources_folder + "lidar_metadata.txt");
-    steeringData = SteeringParser(resources_folder + "steering_true.txt");
-    //
-
-
-    //TEXTURE LOADING
-    stbi_set_flip_vertically_on_load(true);
-
-
-    //TODO delete
-#ifndef WINDOWS
-    std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
-    std::vector<std::string> image_files = glob(resources_folder + "*.png");
-#else
-    std::vector<std::string> files = glob(resources_folder, ".obj");
-    std::vector<std::string> image_files = glob(resources_folder, ".png");
-#endif
-    /*//
-    std::vector<std::string> files_reduced;
-    for(int i = 0 ; i < files.size() - 150; i++){
-        files_reduced.push_back(files[i]);
-    }
-    files = files_reduced;
-    //*/
-
-
-    std::vector<std::future<void>> futures;
-    std::vector<ImageData> imgData(files.size() );
-    std::cout << "Loading images........." << "\n";   //TODO VERY VERY UGLY PLEASE FIX IT
-    const int batch_size = 50;
-    for(int batch = 0; batch < files.size()/batch_size; batch++ ) {
-        for (size_t i = batch_size*batch; i < batch_size*(batch + 1); i++) {
-            futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
-        }
-        for(int i = batch_size*batch; i < batch_size*(batch + 1); i++) {
-            futures[i].get();
-            images.emplace_back(imgData[i]);
-        }
-    }
-    for(int i = (files.size()/batch_size) * batch_size; i < files.size(); i ++) { //Get the rest
-        futures.push_back(std::async(std::launch::async, loadTexture, &imgData, image_files[i], i));
-        futures[i].get();
-        images.emplace_back(imgData[i]);
-    }
-    std::cout << "Finished loading images" << "\n";
-
-    std::cout << "Loading OBJs..........." << "\n";
-    pointclouds.resize(files.size());
-    std::transform(std::execution::par_unseq, files.begin(), files.end(), pointclouds.begin(),
-                   [](std::string file) -> Pointcloud { return Pointcloud(std::move(file)); });
-    std::cout << "Finished loading OBJs" << "\n";
-
-    //PREPROCESSING done if the obj is rotated from the steering
-    for(size_t i = 0 ; i < files.size() ; i++) {
-        pointclouds[i].applyYaw(steeringData.angles[i]);
-        pointclouds[i].sendDataToGPU();
-    }
-
-    for(size_t i = 0 ; i < files.size(); i++){
-        pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
-        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
-        pointclouds[i].updateModelMatrix();
-    }
-
-    ///////////
-
+    std::string resources_folder = "../resources_ego0/";
+    vehicles.emplace_back(resources_folder);
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -210,7 +147,7 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
         glfwSetWindowShouldClose(window, true);
     }
     if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){
-        frameIndex = std::min(pointclouds.size() - 1, frameIndex + 1);
+        frameIndex = std::min(vehicles[active_vehicle].pointclouds.size() - 1, frameIndex + 1);
     }
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
         frameIndex = (size_t)std::max(0 , (int(frameIndex))-1);
