@@ -144,8 +144,8 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
         frameIndex = (size_t)std::max(0 , (int(frameIndex))-1);
     }
-    if(glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS){
-        active_vehicle = (active_vehicle + 1)%vehicles.size();
+    if(glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS){
+        active_vehicle = (active_vehicle + 1)%vehicles.size(); //Cycle through the available vehicles
     }
 }
 
