@@ -53,7 +53,7 @@ int Application::AppMain() {
         glEnable(GL_DEPTH_TEST);
 
         ourShader.setInt("program_switcher", 1);
-        ourShader.setMat4("model", vehicle.pointclouds[frameIndex].model * Carla_to_Opengl_coordinates);
+        ourShader.setMat4("model", vehicle.pointclouds[frameIndex].model);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
 
         ourShader.setVec3("cameraPos", camera.Position);

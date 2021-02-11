@@ -37,9 +37,9 @@ Ego::Ego(std::string resources_folder) {
     std::vector<std::string> image_files = glob(resources_folder, ".png");
 #endif
 
-    //*//
+    /*//
     std::vector<std::string> files_reduced;
-    for(int i = 0 ; i < files.size() - 300; i++){
+    for(int i = 0 ; i < 30; i++){
         files_reduced.push_back(files[i]);
     }
     files = files_reduced;
@@ -78,8 +78,15 @@ Ego::Ego(std::string resources_folder) {
     }
 
     for(size_t i = 0 ; i < files.size(); i++){
-        pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f) );
-        pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
+        pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f));
+
+        auto x_test = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        auto y_test = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+        auto z_test = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+
+        auto test1 = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]);
+        pointclouds[i].ypr = test1; // glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
 

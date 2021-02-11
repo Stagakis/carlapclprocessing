@@ -28,9 +28,8 @@ void ImguiManager::imGuiDrawWindow(ImVec4 &clear_color) {
     ImGui::Text("CameraFront: %f %f %f ", _app.camera.Front[0], _app.camera.Front[1], _app.camera.Front[2]);
     ImGui::Text("CameraYP: %f %f  ", _app.camera.Yaw, _app.camera.Pitch);
     ImGui::Text("LidarSensorYPR: %f %f %f ", vehicle.pointclouds[_app.frameIndex].ypr[0], vehicle.pointclouds[_app.frameIndex].ypr[1], vehicle.pointclouds[_app.frameIndex].ypr[2]);
-    ImGui::Text("LidarSensorXYZ: %f %f %f ", vehicle.pointclouds[_app.frameIndex].translation[0], vehicle.pointclouds[_app.frameIndex].translation[1], vehicle.pointclouds[_app.frameIndex].translation[2]);
-
-    ImGui::Text("transformData.rgbPos: %f %f %f ", vehicle.transformData.rgbPos[_app.frameIndex][0], vehicle.transformData.rgbPos[_app.frameIndex][1], vehicle.transformData.rgbPos[_app.frameIndex][2]);
+    ImGui::Text("LidarSensorTranslationVector: %f %f %f ", vehicle.pointclouds[_app.frameIndex].translation[0], vehicle.pointclouds[_app.frameIndex].translation[1], vehicle.pointclouds[_app.frameIndex].translation[2]);
+    // WARNING while the above does report XYZ in OpenGL coordinates it does not account for roll pitch yaw rotation 
 
     ImGui::Checkbox("PostProcessing", &_app.usePostprocessing);
     ImGui::Checkbox("StartRecording", &_app.recording);

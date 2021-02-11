@@ -35,15 +35,7 @@ struct Hole{
 };
 //glm::mat4 Carla_to_Opengl_coordinates = glm::transpose(glm::mat4( 1.0));
 
-static glm::mat4 Carla_to_Opengl_coordinates = glm::transpose(glm::mat4(   1.0 , 0.0, 0.0, 0.0,
-                                                                    0.0 , 0.0, -1.0, 0.0,
-                                                                    0.0 , 1.0, 0.0, 0.0,
-                                                                    0.0 , 0.0, 0.0, 1.0));
 
-static glm::mat4 imu_carla_to_opengl_coords = glm::transpose(glm::mat4(0.0f,1.0f,0.0f,0.0f,
-                                                                0.0f,0.0f,1.0f,0.0f,
-                                                                -1.0f,0.0f,0.0f,0.0f,
-                                                                0.0f,0.0f,0.0f,1.0f));
 
 
 class Application : public IWindowEventListener{

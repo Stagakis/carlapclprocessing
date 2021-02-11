@@ -6,6 +6,15 @@
 #include "Drawable.h"
 #include "glm/glm.hpp"
 
+
+static const glm::mat4 imu_carla_to_opengl_coords = glm::transpose(
+    glm::mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f,  0.0f, -1.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f)
+);
+
 struct Point{
     float x,y,z;
     Point(float _x, float _y, float _z){

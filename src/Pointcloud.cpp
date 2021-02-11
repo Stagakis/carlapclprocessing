@@ -61,8 +61,7 @@ void Pointcloud::applyYaw(float angle) {
     //std::cout<< "rot: " << glm::to_string(rot) << std::endl;
     for(int i = 0 ; i < points.size(); i ++){
         //std::cout<< "point before: " << glm::to_string(points[i].getVec());
-
-        auto new_point = rot * glm::vec4(points[i].x,points[i].y,points[i].z,1.0f);
+        auto new_point = imu_carla_to_opengl_coords * rot * glm::vec4(points[i].x,points[i].y,points[i].z,1.0f);
         points[i].x = new_point.x;
         points[i].y = new_point.y;
         points[i].z = new_point.z;

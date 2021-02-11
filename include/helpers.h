@@ -23,7 +23,7 @@ void saveFrame(int frameIndex, int numberLength, GLFWwindow* w);
 
 void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, int i);
 
-void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole);
+//void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole);
 
 void save2obj(const std::string filename, std::vector<Point> points);
 
