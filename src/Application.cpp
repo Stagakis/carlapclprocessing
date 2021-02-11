@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <execution>
 #include <utility>
+#include "Ego.h"
 
 namespace fs = std::filesystem;
 
@@ -127,23 +128,22 @@ void Application::Initialization() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    //imu_data = ImuParser("../resources/imu.txt");
-    /*
-    std::ifstream inFile;
-    inFile.open(resources_folder + "occupancy_ego1.csv");
-    std::string line;
-    for (; std::getline(inFile, line);){
-        occupancyFactor.push_back(stof(line.substr(line.find(',') + 1, std::string::npos)));
-    }
-    */
+
+
+
+    camera = Camera();
+
+    //TODO delete
     transformData = TransformParser(resources_folder + "camera_metadata.txt", resources_folder + "lidar_metadata.txt");
     steeringData = SteeringParser(resources_folder + "steering_true.txt");
-    camera = Camera();
+    //
 
 
     //TEXTURE LOADING
     stbi_set_flip_vertically_on_load(true);
 
+
+    //TODO delete
 #ifndef WINDOWS
     std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
     std::vector<std::string> image_files = glob(resources_folder + "*.png");
@@ -159,7 +159,7 @@ void Application::Initialization() {
     files = files_reduced;
     //*/
 
-    auto obj_name_ending = std::string("_saliency_segmentation");
+
     std::vector<std::future<void>> futures;
     std::vector<ImageData> imgData(files.size() );
     std::cout << "Loading images........." << "\n";   //TODO VERY VERY UGLY PLEASE FIX IT
@@ -197,6 +197,8 @@ void Application::Initialization() {
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
+
+    ///////////
 
 }
 
