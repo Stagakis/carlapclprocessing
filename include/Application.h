@@ -21,6 +21,7 @@
 #include "SteeringParser.h"
 #include "ImguiManager.h"
 #include "Ego.h"
+#include "Server.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//
@@ -66,9 +67,10 @@ public:
                                 //until the end and every frame is saved to disk
 
 
-    // Ego vehicles
+    // Ego vehicles and server
     std::vector<Ego> vehicles;
     int active_vehicle = 0;
+    Server server = Server(vehicles);
 
     // timing
     size_t frameIndex = 0;

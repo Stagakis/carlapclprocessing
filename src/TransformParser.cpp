@@ -80,21 +80,34 @@ void TransformParser::moveToOrigin() {
 
 
 TransformParser::TransformParser(std::string rgb, std::string lidar) {
-    parseFile(rgb, rgbPos, rgbRot);
-    parseFile(lidar, lidarPos, lidarRot);
+    parseFile(rgb, rgbPos, rgbRot, rgbTiming);
+    parseFile(lidar, lidarPos, lidarRot, lidarTiming);
 }
 
 void
-TransformParser::parseFile(const std::string filename, std::vector<glm::vec3> &outPos, std::vector<glm::vec3> &outRot) {
+TransformParser::parseFile(const std::string filename, std::vector<glm::vec3> &outPos, std::vector<glm::vec3> &outRot, std::vector<timing> &outTiming) {
     std::ifstream myfile;
     myfile.open(filename);
     std::string line;
-    std::vector<std::string> names = {"Transform(Location(", "Rotation("};
+    std::vector<std::string> names = {"frame=", "Transform(Location(", "Rotation("};
 
     for (; std::getline(myfile, line);)   //read stream line by line
     {
         std::istringstream in(line);
         for(int i = 0; i<names.size() ; i++) {
+            if(names[i] == "frame="){
+                auto start = line.find(names[i]) + std::string(names[i]).length();
+                auto length = line.substr(start, std::string::npos).find(',');
+                int frame = stoi(line.substr(start, length));
+
+                start = line.find("timestamp=") + std::string("timestamp=").length();
+                length = line.substr(start, std::string::npos).find(',');
+                float timestamp = stof(line.substr(start, length));
+
+                outTiming.emplace_back(frame, timestamp);
+                continue;
+            }
+
             auto start = line.find(names[i]) + std::string(names[i]).length();
             auto length = line.substr(start, std::string::npos).find(')');
 

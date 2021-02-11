@@ -60,7 +60,9 @@ add_executable(MyOpengl
         src/SteeringParser.cpp 
         src/ImguiManager.cpp 
         src/helpers.cpp
-        src/Ego.cpp)
+        src/Ego.cpp
+        src/Server.cpp
+        )
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)

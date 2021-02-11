@@ -129,7 +129,6 @@ void Application::Initialization() {
 
     vehicles.emplace_back(resources_folder);
     //vehicles.emplace_back("../resources_ego1/");
-
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
