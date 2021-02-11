@@ -2,8 +2,8 @@
 #define MYOPENGL_SERVER_H
 
 #include <Pointcloud.h>
-#include "Ego.h"
-
+#include "glm/glm.hpp"
+#include "TransformParser.h"
 
 struct obstacle{
     unsigned int timestamp;
@@ -13,8 +13,16 @@ struct obstacle{
 
 class Server {
 public:
-    std::vector<Ego>& vehicles;
-    explicit Server(std::vector<Ego>& _vehicles);
+    static std::vector<obstacle> obstacles;
+    static void addObstacle(std::vector<Point>& points, timing tim);
+    static std::vector<obstacle>& GetObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
+public:
+    //Singleton
+    Server(Server const&) = delete;
+    void operator=(Server const&)  = delete;
+    Server() = delete;
+private:
+
 };
 
 

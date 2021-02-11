@@ -121,8 +121,8 @@ TransformParser::parseFile(const std::string filename, std::vector<glm::vec3> &o
                 data_xyz = data_xyz.substr(length2 + start2 + 2, std::string::npos);
             }
 
-            if (i == 0) outPos.emplace_back(xyz[0], xyz[1], xyz[2]);
-            if (i == 1) outRot.emplace_back(xyz[0], xyz[1], xyz[2]);
+            if (i == 1) outPos.emplace_back(xyz[0], xyz[1], xyz[2]);
+            if (i == 2) outRot.emplace_back(xyz[0], xyz[1], xyz[2]);
 
             line = line.substr(start + length + 1, std::string::npos);
         }
