@@ -20,6 +20,7 @@
 #include <fstream>
 #include "SteeringParser.h"
 #include "ImguiManager.h"
+#include "Ego.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//
@@ -51,20 +52,23 @@ public:
     ImguiManager imgui = ImguiManager(*this);
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f); //clear color of window
 
-    std::vector<ImageDrawable> images;
-    std::vector<Pointcloud> pointclouds;
-    std::vector<float> occupancyFactor;
-
+    //std::vector<ImageDrawable> images;
+    //std::vector<Pointcloud> pointclouds;
+    //std::vector<float> occupancyFactor;
     //Parsers
-    ImuParser imu_data;
-    TransformParser transformData;
-    SteeringParser steeringData;
+    //ImuParser imu_data;
+    //TransformParser transformData;
+    //SteeringParser steeringData;
 
 
     glm::vec3 cameraToLidarOffset;
     bool recording = false;     //If this is true, the simulation starts to run from the current frame (frameIndex)
                                 //until the end and every frame is saved to disk
 
+
+    // Ego vehicles
+    std::vector<Ego> vehicles;
+    int active_vehicle = 0;
 
     // timing
     size_t frameIndex = 0;

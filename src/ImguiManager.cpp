@@ -16,6 +16,8 @@ ImguiManager::ImguiManager(Application & app): _app(app) {
 
 
 void ImguiManager::imGuiDrawWindow(ImVec4 &clear_color) {
+    auto& vehicle = _app.vehicles[_app.active_vehicle];
+
     ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
 
     ImGui::SliderFloat("CameraZoom", &_app.camera.Zoom, 40.0f, 110.0f);
@@ -25,9 +27,9 @@ void ImguiManager::imGuiDrawWindow(ImVec4 &clear_color) {
     ImGui::Text("CameraPos: %f %f %f ", _app.camera.Position[0], _app.camera.Position[1], _app.camera.Position[2]);
     ImGui::Text("CameraFront: %f %f %f ", _app.camera.Front[0], _app.camera.Front[1], _app.camera.Front[2]);
     ImGui::Text("CameraYP: %f %f  ", _app.camera.Yaw, _app.camera.Pitch);
-    ImGui::Text("PclYPR: %f %f %f ", _app.pointclouds[_app.frameIndex].ypr[0], _app.pointclouds[_app.frameIndex].ypr[1], _app.pointclouds[_app.frameIndex].ypr[2]);
+    ImGui::Text("PclYPR: %f %f %f ", vehicle.pointclouds[_app.frameIndex].ypr[0], vehicle.pointclouds[_app.frameIndex].ypr[1], vehicle.pointclouds[_app.frameIndex].ypr[2]);
 
-    ImGui::Text("transformData.rgbPos: %f %f %f ", _app.transformData.rgbPos[_app.frameIndex][0], _app.transformData.rgbPos[_app.frameIndex][1], _app.transformData.rgbPos[_app.frameIndex][2]);
+    ImGui::Text("transformData.rgbPos: %f %f %f ", vehicle.transformData.rgbPos[_app.frameIndex][0], vehicle.transformData.rgbPos[_app.frameIndex][1], vehicle.transformData.rgbPos[_app.frameIndex][2]);
 
     ImGui::Checkbox("PostProcessing", &_app.usePostprocessing);
     ImGui::Checkbox("StartRecording", &_app.recording);
