@@ -42,7 +42,7 @@ void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, in
     imgData->operator[](i).nrChannels = nrChannels;
     imgData->operator[](i).name = std::string(filepath);
 }
-
+/*
 void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
     float bed_level = hole.center.y + 0.1f;
     std::vector<Point> out_points;
@@ -73,6 +73,7 @@ void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
     }
     pcl.points = std::vector<Point>(out_points);
 }
+*/
 
 void save2obj(const std::string filename, std::vector<Point> points){
     std::ofstream myfile;
