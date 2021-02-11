@@ -6,15 +6,16 @@
 #include "TransformParser.h"
 
 struct obstacle{
-    unsigned int timestamp;
-    Point center;
+    timing time;
+    glm::vec3 center;
     std::vector<Point> points; //In world space coordinates
+    obstacle(timing _time, glm::vec3 _center, std::vector<Point> _points):time(_time), center(_center), points(_points) {}
 };
 
 class Server {
 public:
     static std::vector<obstacle> obstacles;
-    static void addObstacle(std::vector<Point>& points, timing tim);
+    static void addObstacle(std::vector<Point>& points, timing& tim);
     static std::vector<obstacle>& GetObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
 public:
     //Singleton

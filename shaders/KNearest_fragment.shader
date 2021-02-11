@@ -22,7 +22,7 @@ void main()
         return;
     }
 
-    vec4 final_color = vec4(texture(texture0, TexCoord).rgb, final_alpha_value); //initialize the color with the current pixel
+    vec4 final_color = vec4(texture(texture0, TexCoord).rgb, final_alpha_value); //initialize the color with the closest pixel
     for(int u = -radius; u<radius; u++){
         int v_range = int(sqrt(pow(radius,2) - pow(u,2)));
         for(int v = -v_range; v< v_range; v++){

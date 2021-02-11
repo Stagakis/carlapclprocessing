@@ -23,6 +23,8 @@ int Application::AppMain() {
         cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
+        vehicle.checkForObstacles(frameIndex, 0.0f);
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -60,12 +62,12 @@ int Application::AppMain() {
         if(usePostprocessing) {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             vehicle.pointclouds[frameIndex].draw();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            //glBindFramebuffer(GL_FRAMEBUFFER, 0);
             postProcessShader.use();
             postProcessShader.setInt("program_switcher", 0);
             postProcessShader.setVec2("stepSize", 1.0f / SCR_WIDTH, 1.0f / SCR_HEIGHT);
             postProcessShader.setFloat("alpha_value", 1.0f);
-            glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+            //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             glDisable(GL_DEPTH_TEST);
             glDisable(GL_BLEND);
 

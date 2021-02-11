@@ -6,7 +6,7 @@
 #define MYOPENGL_TRANSFORMPARSER_H
 
 struct timing{
-    int frame;
+    unsigned int frame;
     float timestamp;
     timing(int _frame, float _timestamp): frame(_frame), timestamp(_timestamp){ }
 };
