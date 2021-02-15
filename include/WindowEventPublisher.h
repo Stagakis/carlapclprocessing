@@ -12,12 +12,12 @@ public:
     static void mouseCallback(GLFWwindow* window, double xpos, double ypos);
     static void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
-    static void notifyFrameUpdate(GLFWwindow* window, float deltaTime);
-
     static void addKeyboardListener(IWindowEventListener& listener);
     static void addFrameUpdateListener(IWindowEventListener& listener);
     static void addMouseListener(IWindowEventListener&  listener);
     static void addScrollListener(IWindowEventListener&  listener);
+
+    static void notifyFrameUpdate(GLFWwindow* window, float deltaTime);  //Notify every listener that subscribed through addFrameUpdateListener
 
 private:
     static std::vector<IWindowEventListener*> keyboardListeners;

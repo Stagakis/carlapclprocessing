@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <execution>
 #include <future>
+#include "glm/gtx/string_cast.hpp"
+#include <glm/gtx/transform.hpp>
 
 void Ego::checkForObstacles(int index, int threshold) {
     static int last_index = -1;
@@ -76,15 +78,21 @@ Ego::Ego(std::string resources_folder) {
                    [](std::string file) -> Pointcloud { return Pointcloud(std::move(file)); });
     std::cout << "Finished loading OBJs" << "\n";
 
-    //PREPROCESSING done if the obj is rotated from the steering
+    //PREPROCESSING rotate pointcloud based on steering and transform coordinates from Carla to Opengl system
     for(size_t i = 0 ; i < files.size() ; i++) {
-        pointclouds[i].applyYaw(steeringData.angles[i]);
+        auto rot = glm::rotate(glm::radians(steeringData.angles[i]), glm::vec3(0, 0, 1));
+        auto &points = pointclouds[i].points;
+        for (int i = 0; i < points.size(); i++) {
+            auto new_point = imu_carla_to_opengl_coords * rot * glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
+            points[i].x = new_point.x;
+            points[i].y = new_point.y;
+            points[i].z = new_point.z;
+        }
         pointclouds[i].sendDataToGPU();
     }
 
     for(size_t i = 0 ; i < files.size(); i++){
         pointclouds[i].translation = glm::vec3(imu_carla_to_opengl_coords * glm::vec4(transformData.lidarPos[i], 1.0f));
-
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]);; // glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }

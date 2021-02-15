@@ -75,7 +75,7 @@ void ImguiManager::imGuiOccupancyFactor() {
 
 }
 
-void ImguiManager::draw() {
+void ImguiManager::DrawAllWindows() {
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();

@@ -48,7 +48,6 @@ class Pointcloud : public Drawable{
         void draw() override;
         explicit Pointcloud(std::string filename);
         void sendDataToGPU();
-        void applyYaw(float angle);
 };
 
 
