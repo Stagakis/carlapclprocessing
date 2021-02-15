@@ -33,26 +33,13 @@ struct Hole{
     Hole(glm::vec3 _center, float _radius, float _depth){center = _center; radius = _radius; depth = _depth;}
     Hole()= default;
 };
-//glm::mat4 Carla_to_Opengl_coordinates = glm::transpose(glm::mat4( 1.0));
-
-
 
 
 class Application : public IWindowEventListener{
 public:
     Camera camera;
     GLFWwindow* window;
-    ImguiManager imgui = ImguiManager(*this);
     ImVec4 clear_color = ImVec4(0.2f, 0.3f, 0.3f, 1.0f); //clear color of window
-
-    //std::vector<ImageDrawable> images;
-    //std::vector<Pointcloud> pointclouds;
-    //std::vector<float> occupancyFactor;
-    //Parsers
-    //ImuParser imu_data;
-    //TransformParser transformData;
-    //SteeringParser steeringData;
-
 
     glm::vec3 cameraToLidarOffset;
     bool recording = false;     //If this is true, the simulation starts to run from the current frame (frameIndex)
@@ -77,16 +64,11 @@ public:
     unsigned int fbo;
     unsigned int fbTexture;
 
-    //void imGuiDrawWindow(ImVec4 &clear_color);
-    //void imGuiOccupancyFactor();
-
     void setUpWindowEventHandlers();
     void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods) override;
     void Initialization();
 
     int AppMain();
-
-
 };
 
 
