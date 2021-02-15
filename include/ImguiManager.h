@@ -13,7 +13,7 @@ class Application;
 class ImguiManager {
 public:
     static void InitializeImguiManager(Application& _app);
-    static void draw();
+    static void DrawAllWindows();
     static void imGuiDrawWindow();
     static void imGuiOccupancyFactor();
     

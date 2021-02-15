@@ -84,7 +84,7 @@ int Application::AppMain() {
         else
             vehicle.pointclouds[frameIndex].draw();
 
-        ImguiManager::draw();
+        ImguiManager::DrawAllWindows();
         glfwPollEvents();
         WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
 
