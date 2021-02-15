@@ -7,7 +7,7 @@
 #include "glm/glm.hpp"
 
 
-static const glm::mat4 imu_carla_to_opengl_coords = glm::transpose(
+static const glm::mat4 carla_to_opengl_coord_system = glm::transpose(
     glm::mat4(
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f,  0.0f, -1.0f, 0.0f,
