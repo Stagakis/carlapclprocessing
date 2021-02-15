@@ -20,7 +20,7 @@ int Application::AppMain() {
     {
         auto& vehicle = vehicles[active_vehicle];
 
-        cameraToLidarOffset = imu_carla_to_opengl_coords * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
+        cameraToLidarOffset = carla_to_opengl_coord_system * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
         vehicle.checkForObstacles(frameIndex, 0.0f);
