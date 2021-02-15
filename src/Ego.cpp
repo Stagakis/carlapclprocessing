@@ -5,10 +5,15 @@
 #include <future>
 
 void Ego::checkForObstacles(int index, int threshold) {
+    static int last_index = -1;
+
+    if (index == last_index) return;
+
     for (int i = 0; i < pointclouds[index].points.size(); i++) {
         auto& p = pointclouds[index].points[i];
         if (p.y < threshold) {
             std::cout << "hole found " << p.y << std::endl;
+            last_index = index;
             break;
         }
 
@@ -37,9 +42,9 @@ Ego::Ego(std::string resources_folder) {
     std::vector<std::string> image_files = glob(resources_folder, ".png");
 #endif
 
-    /*//
+    //*//
     std::vector<std::string> files_reduced;
-    for(int i = 0 ; i < 30; i++){
+    for(int i = 0 ; i < 5; i++){
         files_reduced.push_back(files[i]);
     }
     files = files_reduced;

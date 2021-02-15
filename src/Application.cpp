@@ -84,18 +84,7 @@ int Application::AppMain() {
         else
             vehicle.pointclouds[frameIndex].draw();
 
-        /*//  //   OUTPUT FILE FOR MATLAB CODE
-        for(int k=0 ; k < files.size(); k++) {
-        //for(int k=23; k < 24; k++) {
-            for (int i = 0; i < holes.size(); i++) {
-                applyHole2Pointcloud(pointclouds[k], holes[i]);
-            }
-            save2obj(files[k].substr(0, files[k].size() - 4) + ".obj", pointclouds[k].points);
-        }
-        return 0;
-        //*/
-
-        imgui.draw();
+        ImguiManager::draw();
         glfwPollEvents();
         WindowEventPublisher::notifyFrameUpdate(window, deltaTime);
 

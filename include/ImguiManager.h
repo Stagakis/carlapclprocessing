@@ -12,14 +12,13 @@ class Application;
 
 class ImguiManager {
 public:
-    ImguiManager(Application& app);
-
-    void draw();
-    void imGuiDrawWindow(ImVec4 &clear_color);
-    void imGuiOccupancyFactor();
-
+    static void InitializeImguiManager(Application& _app);
+    static void draw();
+    static void imGuiDrawWindow();
+    static void imGuiOccupancyFactor();
+    
 private:
-    Application& _app;
+    static Application* app;
 };
 
 
