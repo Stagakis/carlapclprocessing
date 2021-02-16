@@ -15,7 +15,7 @@ struct obstacle{
 class Server {
 public:
     static std::vector<obstacle> obstacles;
-    static void addObstacle(std::vector<Point>& points, timing& tim);
+    static void AddObstacle(std::vector<Point>& points, timing& tim);
     static std::vector<obstacle>& GetObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
 public:
     //Singleton
