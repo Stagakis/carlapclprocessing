@@ -3,7 +3,7 @@
 std::vector<obstacle> Server::obstacles = std::vector<obstacle>();
 
 
-void Server::addObstacle(std::vector<Point>& points, timing& tim) {
+void Server::AddObstacle(std::vector<Point>& points, timing& tim) {
     auto center = glm::vec3(0, 0, 0);
     auto obs = obstacle(tim, center, points);
     obstacles.push_back(obs);

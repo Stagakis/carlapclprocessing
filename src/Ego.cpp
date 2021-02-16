@@ -8,8 +8,10 @@
 
 void Ego::checkForObstacles(int index, int threshold) {
     static int last_index = -1;
+    static int sleeping_index = 100;//it starts at 100 because it also detects random stuff in the beggining
+    static int max_number_of_points = 0;
 
-    if (index == last_index) return;
+    if (index < sleeping_index || index == last_index) return;
 
     //Find bounding box
     float min_x = std::numeric_limits<float>::max();
@@ -27,14 +29,13 @@ void Ego::checkForObstacles(int index, int threshold) {
         }   
     }
 
-    //glm::vec3 corner = glm::vec3(min_x, 0, min_z);
     float shrink_factor = 0.1f;
     float x_len = (1 - shrink_factor) * std::abs(max_x - min_x);
     float z_len = 7; // std::min((1 - shrink_factor) * std::abs(max_z - min_z), 10.0f);
     glm::vec3 corner = glm::vec3(min_x + shrink_factor * std::abs(max_x - min_x), 0 , max_z); //max_z because we are looking at -z
 
-    //std::cout << "Corner point: " << glm::to_string(corner) << ", with x_len/z_len " << x_len << " " << z_len << std::endl;
-    int number_of_points = 0;
+    int current_number_of_points = 0;
+    std::vector<size_t> indeces = std::vector<size_t>();
     for (int i = 0; i < pointclouds[index].points.size(); i++) {
         auto& p = pointclouds[index].points[i];
         auto& c = pointclouds[index].colors[i];
@@ -49,14 +50,26 @@ void Ego::checkForObstacles(int index, int threshold) {
                 c.r = 1;
                 c.g = 0;
                 c.b = 0;
-                number_of_points++;
+                indeces.push_back(i);
+                current_number_of_points++;
             }
         }
-        //    std::cout << "Test point: " << p.x << " " << p.y << " " << " " << p.z << " p.x - corner.x " << p.x - corner.x << " p.z-corner.z " << p.z - corner.z << std::endl;
     }
-    std::cout << number_of_points << std::endl;
+    if (current_number_of_points >= max_number_of_points)
+        max_number_of_points = current_number_of_points;
+    else{
+        std::cout << "Sending hole..." << std::endl;
+        std::vector<Point> points;
+        for (auto point_index : indeces) {
+            points.push_back(pointclouds[index].points[point_index]);
+        }
+        Server::AddObstacle(points, transformData.rgbTiming[index]);
+        max_number_of_points = 0;
+        sleeping_index = index + 20;
+    }
+    std::cout << current_number_of_points << std::endl;
 
-    pointclouds[index].sendDataToGPU();
+    pointclouds[index].sendDataToGPU(); //TODO delete this and also stop messing with the indeces's pos
     last_index = index;
 }
 
@@ -134,5 +147,4 @@ Ego::Ego(std::string resources_folder) {
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]);; // glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
-
 }
