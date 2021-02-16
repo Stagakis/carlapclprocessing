@@ -56,7 +56,6 @@ void Pointcloud::draw() {
     glDrawArrays(GL_POINTS, 0, points.size());
 }
 
-
 void Pointcloud::sendDataToGPU() {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -74,6 +73,12 @@ void Pointcloud::sendDataToGPU() {
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
+}
+
+Pointcloud::Pointcloud(std::vector<Point> _points, std::vector<glm::vec3> _colors) {
+    points = _points;
+    colors = _colors;
+    sendDataToGPU();
 }
 
 Pointcloud::Pointcloud() {

@@ -63,7 +63,13 @@ void Ego::checkForObstacles(int index, int threshold) {
         for (auto point_index : indeces) {
             points.push_back(pointclouds[index].points[point_index]);
         }
-        Server::AddObstacle(points, transformData.rgbTiming[index]);
+        std::vector<glm::vec3> colors = std::vector<glm::vec3>(points.size(), glm::vec3(1,0,0));
+        auto obst_pcl = Pointcloud(points, colors);
+        obst_pcl.translation = pointclouds[index].translation;
+        obst_pcl.ypr = pointclouds[index].ypr;
+        obst_pcl.updateModelMatrix();
+        Server::AddObstacle(obst_pcl, transformData.rgbTiming[index]);
+
         max_number_of_points = 0;
         sleeping_index = index + 20;
     }
@@ -134,7 +140,7 @@ Ego::Ego(std::string resources_folder) {
         auto rot = glm::rotate(glm::radians(steeringData.angles[i]), glm::vec3(0, 0, 1));
         auto &points = pointclouds[i].points;
         for (int i = 0; i < points.size(); i++) {
-            auto new_point = carla_to_opengl_coord_system * rot * glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
+            auto new_point = pcl_to_opengl_coord_system * rot * glm::vec4(points[i].x, points[i].y, points[i].z, 1.0f);
             points[i].x = new_point.x;
             points[i].y = new_point.y;
             points[i].z = new_point.z;
@@ -143,7 +149,7 @@ Ego::Ego(std::string resources_folder) {
     }
 
     for(size_t i = 0 ; i < files.size(); i++){
-        pointclouds[i].translation = glm::vec3(carla_to_opengl_coord_system * glm::vec4(transformData.lidarPos[i], 1.0f));
+        pointclouds[i].translation = glm::vec3(unreal_to_opengl_coord_system * glm::vec4(transformData.lidarPos[i], 1.0f));
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]);; // glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }

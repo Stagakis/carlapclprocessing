@@ -8,16 +8,15 @@
 struct obstacle{
     timing time;
     glm::vec3 center;
-    std::vector<Point> points; //In world space coordinates
-    obstacle(timing _time, glm::vec3 _center, std::vector<Point> _points):time(_time), center(_center), points(_points) {}
+    Pointcloud pcl; //In world space coordinates
+    obstacle(timing _time, glm::vec3 _center, Pointcloud _pcl):time(_time), center(_center), pcl(_pcl) {}
 };
 
 class Server {
 public:
     static std::vector<obstacle> obstacles;
-    static void AddObstacle(std::vector<Point>& points, timing& tim);
-
-    static void DisplayObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
+    static void AddObstacle(Pointcloud pcl, timing& tim);
+    static void DisplayObstacle(obstacle& obst, glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
 public:
     //Singleton
     Server(Server const&) = delete;

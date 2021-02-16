@@ -22,7 +22,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 glm::mat4 Camera::GetViewMatrix()
 {
     if(following){
-        Yaw =  -90 - obj->ypr[0];  //So the camera doesn't jump around when switching from following
+        Yaw =  obj->ypr[0];  //So the camera doesn't jump around when switching from following
         Pitch = obj->ypr[1];       //
         float time = glfwGetTime();
         Front = glm::eulerAngleYXZ(glm::radians(obj->ypr[0]), glm::radians(obj->ypr[1]), glm::radians(0.0f)) * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);

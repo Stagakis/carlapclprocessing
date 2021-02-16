@@ -7,13 +7,22 @@
 #include "glm/glm.hpp"
 
 
-static const glm::mat4 carla_to_opengl_coord_system = glm::transpose(
+static const glm::mat4 pcl_to_opengl_coord_system = glm::transpose(
     glm::mat4(
         1.0f, 0.0f, 0.0f, 0.0f,
         0.0f,  0.0f, -1.0f, 0.0f,
         0.0f, 1.0f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f)
 );
+
+static const glm::mat4 unreal_to_opengl_coord_system = glm::transpose(
+    glm::mat4(
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f)
+);
+
 
 struct Point{
     float x,y,z;
@@ -47,6 +56,7 @@ class Pointcloud : public Drawable{
         std::vector<glm::vec3> colors;
         void draw() override;
         explicit Pointcloud(std::string filename);
+        Pointcloud(std::vector<Point> _points, std::vector<glm::vec3> _colors);
         void sendDataToGPU();
 };
 

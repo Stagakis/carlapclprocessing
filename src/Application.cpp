@@ -20,7 +20,7 @@ int Application::AppMain() {
     {
         auto& vehicle = vehicles[active_vehicle];
 
-        cameraToLidarOffset = carla_to_opengl_coord_system * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
+        cameraToLidarOffset = unreal_to_opengl_coord_system * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
         vehicle.checkForObstacles(frameIndex, 0.0f);
@@ -82,9 +82,11 @@ int Application::AppMain() {
             glEnable(GL_DEPTH_TEST);
         }
         else {
-            //vehicle.pointclouds[frameIndex].draw();
-            //ourShader.setMat4("model", glm::mat4(1.0f));
-            Server::DisplayObstacles(vehicle.transformData.lidarPos[frameIndex], vehicle.transformData.lidarRot[frameIndex]);
+            vehicle.pointclouds[frameIndex].draw();
+            for (auto& obst : Server::obstacles) {
+                ourShader.setMat4("model", obst.pcl.model);
+                Server::DisplayObstacle(obst, vehicle.transformData.lidarPos[frameIndex], vehicle.transformData.lidarRot[frameIndex]);
+            }
         }
         ImguiManager::DrawAllWindows();
         glfwPollEvents();
