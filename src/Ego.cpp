@@ -41,15 +41,15 @@ void Ego::checkForObstacles(int index, int threshold) {
         auto& c = pointclouds[index].colors[i];
 
         if (p.x < corner.x || p.z > corner.z || p.x - corner.x > x_len || corner.z - p.z > z_len) {
-            p.x = std::numeric_limits<float>::min();
-            p.y = std::numeric_limits<float>::min();
-            p.z = std::numeric_limits<float>::min();
+            //p.x = std::numeric_limits<float>::min();
+            //p.y = std::numeric_limits<float>::min();
+            //p.z = std::numeric_limits<float>::min();
         }
         else {
             if (c == glm::vec3(1, 1, 0)) {
-                c.r = 1;
-                c.g = 0;
-                c.b = 0;
+                //c.r = 1;
+                //c.g = 0;
+                //c.b = 0;
                 indeces.push_back(i);
                 current_number_of_points++;
             }
@@ -69,7 +69,7 @@ void Ego::checkForObstacles(int index, int threshold) {
     }
     std::cout << current_number_of_points << std::endl;
 
-    pointclouds[index].sendDataToGPU(); //TODO delete this and also stop messing with the indeces's pos
+    //pointclouds[index].sendDataToGPU(); //TODO delete this and also stop messing with the indeces's pos
     last_index = index;
 }
 

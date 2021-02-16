@@ -25,6 +25,7 @@ int Application::AppMain() {
 
         vehicle.checkForObstacles(frameIndex, 0.0f);
 
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
@@ -55,7 +56,6 @@ int Application::AppMain() {
         ourShader.setInt("program_switcher", 1);
         ourShader.setMat4("model", vehicle.pointclouds[frameIndex].model);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
-
         ourShader.setVec3("cameraPos", camera.Position);
 
         //POST PROCESSING
@@ -81,9 +81,11 @@ int Application::AppMain() {
             vehicle.images[frameIndex].draw(fbTexture);
             glEnable(GL_DEPTH_TEST);
         }
-        else
-            vehicle.pointclouds[frameIndex].draw();
-
+        else {
+            //vehicle.pointclouds[frameIndex].draw();
+            //ourShader.setMat4("model", glm::mat4(1.0f));
+            Server::DisplayObstacles(vehicle.transformData.lidarPos[frameIndex], vehicle.transformData.lidarRot[frameIndex]);
+        }
         ImguiManager::DrawAllWindows();
         glfwPollEvents();
         WindowEventPublisher::notifyFrameUpdate(window, deltaTime);

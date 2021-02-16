@@ -16,7 +16,8 @@ class Server {
 public:
     static std::vector<obstacle> obstacles;
     static void AddObstacle(std::vector<Point>& points, timing& tim);
-    static std::vector<obstacle>& GetObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
+
+    static void DisplayObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot);
 public:
     //Singleton
     Server(Server const&) = delete;
