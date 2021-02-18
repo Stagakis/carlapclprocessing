@@ -101,7 +101,7 @@ Ego::Ego(std::string resources_folder) {
     std::vector<std::string> image_files = glob(resources_folder, ".png");
 #endif
 
-    //*//
+    /*//
     std::vector<std::string> files_reduced;
     for(int i = 0 ; i < 150; i++){
         files_reduced.push_back(files[i]);

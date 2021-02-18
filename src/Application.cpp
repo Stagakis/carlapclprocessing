@@ -33,6 +33,7 @@ int Application::AppMain() {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -120,10 +121,10 @@ void Application::Initialization() {
 
     camera = Camera();
 
-    std::string resources_folder = "../resources_ego0/";
+    //std::string resources_folder = "../resources_ego0/";
 
-    vehicles.emplace_back(resources_folder);
-    //vehicles.emplace_back("../resources_ego1/");
+    vehicles.emplace_back("../resources_ego0/");
+    vehicles.emplace_back("../resources_ego1/");
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
