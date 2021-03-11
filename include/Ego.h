@@ -18,7 +18,7 @@ public:
     SteeringParser steeringData;
     void checkForObstacles(int index, int threshold);
 
-    Ego(std::string resources_folder);
+    explicit Ego(std::string resources_folder);
 
 };
 

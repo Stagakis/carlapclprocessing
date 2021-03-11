@@ -1,3 +1,5 @@
+html/
+latex/
 cmake-build-debug/
 resources*/
 *.mp4
