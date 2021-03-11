@@ -51,17 +51,17 @@ target_link_libraries(imgui glad glfw)
 add_executable(MyOpengl
         src/main.cpp
         src/Pointcloud.cpp
-        src/ImuParser.cpp
-        src/WindowEventPublisher.cpp
+        src/Parsers/ImuParser.cpp
+        src/Singletons/WindowEventPublisher.cpp
         src/Camera.cpp
         src/Application.cpp
-        src/ImageDrawable.cpp 
-        src/TransformParser.cpp 
-        src/SteeringParser.cpp 
-        src/ImguiManager.cpp 
+        src/ImageDrawable.cpp
+        src/Parsers/TransformParser.cpp
+        src/Parsers/SteeringParser.cpp
+        src/Singletons/ImguiManager.cpp
         src/helpers.cpp
         src/Ego.cpp
-        src/Server.cpp
+        src/Singletons/Server.cpp
         )
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)

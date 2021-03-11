@@ -1,5 +1,5 @@
 #include "Application.h"
-#include "WindowEventPublisher.h"
+#include "Singletons/WindowEventPublisher.h"
 #include "helpers.h"
 
 int main()

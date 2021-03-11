@@ -10,18 +10,18 @@
 #include <string.h> // memset()
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <ImuParser.h>
+#include <Parsers/ImuParser.h>
 #include <glm/glm.hpp>
 #include "Camera.h"
 #include "IWindowEventListener.h"
 #include "Pointcloud.h"
 #include "ImageDrawable.h"
-#include "TransformParser.h"
+#include "Parsers/TransformParser.h"
 #include <fstream>
-#include "SteeringParser.h"
-#include "ImguiManager.h"
+#include "Parsers/SteeringParser.h"
+#include "Singletons/ImguiManager.h"
 #include "Ego.h"
-#include "Server.h"
+#include "Singletons/Server.h"
 
 const unsigned int SCR_WIDTH =  1600; // 1920;//
 const unsigned int SCR_HEIGHT = 800; // 1080;//

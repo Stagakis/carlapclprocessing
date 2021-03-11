@@ -2,7 +2,7 @@
 // Created by stagakis on 8/2/21.
 //
 
-#include "ImguiManager.h"
+#include "Singletons/ImguiManager.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"

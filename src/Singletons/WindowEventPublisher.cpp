@@ -1,4 +1,4 @@
-#include "WindowEventPublisher.h"
+#include "Singletons/WindowEventPublisher.h"
 
 std::vector<IWindowEventListener*> WindowEventPublisher::keyboardListeners = std::vector<IWindowEventListener*>();
 std::vector<IWindowEventListener*> WindowEventPublisher::mouseListeners = std::vector<IWindowEventListener*>();

@@ -1,4 +1,4 @@
-#include "Server.h"
+#include "Singletons/Server.h"
 
 std::vector<obstacle> Server::obstacles = std::vector<obstacle>();
 
