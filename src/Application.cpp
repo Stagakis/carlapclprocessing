@@ -124,7 +124,7 @@ void Application::Initialization() {
     //std::string resources_folder = "../resources_ego0/";
 
     vehicles.emplace_back("../resources_ego0/");
-    //vehicles.emplace_back("../resources_ego1/");
+    vehicles.emplace_back("../resources_ego1/");
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {

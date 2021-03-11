@@ -75,7 +75,7 @@ void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
 }
 */
 
-void save2obj(const std::string filename, std::vector<Point> points){
+void save2obj(const std::string filename, std::vector<glm::vec3> points){
     std::ofstream myfile;
     myfile.open(filename);
     for(int i = 0 ; i < points.size() ; i++){

@@ -59,7 +59,7 @@ void Ego::checkForObstacles(int index, int threshold) {
         max_number_of_points = current_number_of_points;
     else{
         std::cout << "Sending hole..." << std::endl;
-        std::vector<Point> points;
+        std::vector<glm::vec3> points;
         for (auto point_index : indeces) {
             points.push_back(pointclouds[index].points[point_index]);
         }
