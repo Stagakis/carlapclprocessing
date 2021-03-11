@@ -33,7 +33,9 @@ void Ego::checkForObstacles(int index, int threshold) {
     float x_len = (1 - shrink_factor) * std::abs(max_x - min_x);
     float z_len = 7; // std::min((1 - shrink_factor) * std::abs(max_z - min_z), 10.0f);
     glm::vec3 corner = glm::vec3(min_x + shrink_factor * std::abs(max_x - min_x), 0 , max_z); //max_z because we are looking at -z
+
     std::vector<size_t> indeces = std::vector<size_t>();
+
     for (int i = 0; i < pointclouds[index].points.size(); i++) {
         auto& p = pointclouds[index].points[i];
         auto& c = pointclouds[index].colors[i];
@@ -47,13 +49,13 @@ void Ego::checkForObstacles(int index, int threshold) {
             }
         }
     }
-    if (indeces.size() > max_number_of_points)
+    if (indeces.size() >= max_number_of_points)
         max_number_of_points = indeces.size();
     else{
         std::cout << "Sending hole..." << std::endl;
         std::vector<glm::vec3> points = std::vector<glm::vec3>(indeces.size());
         for (size_t i = 0; i < indeces.size() ; i++) {
-            points[i] = pointclouds[index].points[i];
+            points[i] = pointclouds[index].points[indeces[i]];
         }
         std::vector<glm::vec3> colors = std::vector<glm::vec3>(points.size(), glm::vec3(1,0,0));
         auto obst_pcl = Pointcloud(points, colors);
