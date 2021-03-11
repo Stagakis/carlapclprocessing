@@ -23,7 +23,9 @@ static const glm::mat4 unreal_to_opengl_coord_system = glm::transpose(
         0.0f, 0.0f, 0.0f, 1.0f)
 );
 
+using Point = glm::vec3;
 
+/*
 struct Point{
     float x,y,z;
     Point(float _x, float _y, float _z){
@@ -48,6 +50,7 @@ struct Point{
         z = pos[2];
     }
 };
+*/
 
 class Pointcloud : public Drawable{
     public:
