@@ -9,7 +9,11 @@ void Server::AddObstacle(Pointcloud pcl, timing& tim) {
     obstacles.push_back(obs);
 }
 
-void Server::DisplayObstacle(obstacle& obst, glm::vec3 vehicle_pos, glm::vec3 vehicle_rot) {
-    //TODO do some checking whether it should be drawn or not based on pos and rot
-    obst.pcl.draw();
+std::vector<Pointcloud *> Server::GetRelevantObstacles(glm::vec3 vehicle_pos, glm::vec3 vehicle_rot) {
+    std::vector<Pointcloud *> relevant_obstacles;
+    for(auto& obstacle: obstacles){
+        relevant_obstacles.push_back(&obstacle.pcl);
+    }
+    return relevant_obstacles;
 }
+

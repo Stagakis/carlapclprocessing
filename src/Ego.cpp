@@ -9,12 +9,12 @@
 void Ego::checkForObstacles(int index, int threshold) {
     static int last_index = -1;
     static int sleeping_index = 100;//it starts at 100 because it also detects random stuff in the beggining
-    static int max_number_of_points = 0;
+    static size_t max_number_of_points = 0;
 
     if (index < sleeping_index || index == last_index) return;
     if (index > 200) return; //This is for video purpose TODO delete
 
-    //Find bounding box
+    //Find bounding box of the blue area
     float min_x = std::numeric_limits<float>::max();
     float min_z = std::numeric_limits<float>::max();
     float max_x = std::numeric_limits<float>::min();
@@ -35,34 +35,28 @@ void Ego::checkForObstacles(int index, int threshold) {
     float z_len = 7; // std::min((1 - shrink_factor) * std::abs(max_z - min_z), 10.0f);
     glm::vec3 corner = glm::vec3(min_x + shrink_factor * std::abs(max_x - min_x), 0 , max_z); //max_z because we are looking at -z
 
-    int current_number_of_points = 0;
     std::vector<size_t> indeces = std::vector<size_t>();
+
     for (int i = 0; i < pointclouds[index].points.size(); i++) {
         auto& p = pointclouds[index].points[i];
         auto& c = pointclouds[index].colors[i];
 
         if (p.x < corner.x || p.z > corner.z || p.x - corner.x > x_len || corner.z - p.z > z_len) {
-            //p.x = std::numeric_limits<float>::min();
-            //p.y = std::numeric_limits<float>::min();
-            //p.z = std::numeric_limits<float>::min();
+            continue;
         }
         else {
             if (c == glm::vec3(1, 1, 0)) {
-                //c.r = 1;
-                //c.g = 0;
-                //c.b = 0;
                 indeces.push_back(i);
-                current_number_of_points++;
             }
         }
     }
-    if (current_number_of_points >= max_number_of_points)
-        max_number_of_points = current_number_of_points;
+    if (indeces.size() >= max_number_of_points)
+        max_number_of_points = indeces.size();
     else{
         std::cout << "Sending hole..." << std::endl;
-        std::vector<Point> points;
-        for (auto point_index : indeces) {
-            points.push_back(pointclouds[index].points[point_index]);
+        std::vector<glm::vec3> points = std::vector<glm::vec3>(indeces.size());
+        for (size_t i = 0; i < indeces.size() ; i++) {
+            points[i] = pointclouds[index].points[indeces[i]];
         }
         std::vector<glm::vec3> colors = std::vector<glm::vec3>(points.size(), glm::vec3(1,0,0));
         auto obst_pcl = Pointcloud(points, colors);
@@ -74,9 +68,7 @@ void Ego::checkForObstacles(int index, int threshold) {
         max_number_of_points = 0;
         sleeping_index = index + 500;
     }
-    std::cout << current_number_of_points << std::endl;
-
-    //pointclouds[index].sendDataToGPU(); //TODO delete this and also stop messing with the indeces's pos
+    std::cout << indeces.size() << std::endl;
     last_index = index;
 }
 

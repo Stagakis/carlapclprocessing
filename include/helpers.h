@@ -25,7 +25,7 @@ void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, in
 
 //void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole);
 
-void save2obj(const std::string filename, std::vector<Point> points);
+void save2obj(const std::string filename, std::vector<glm::vec3> points);
 
 #ifndef WINDOWS
 std::vector<std::string> glob(const std::string &pattern);
