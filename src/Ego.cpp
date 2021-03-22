@@ -12,6 +12,7 @@ void Ego::checkForObstacles(int index, int threshold) {
     static int max_number_of_points = 0;
 
     if (index < sleeping_index || index == last_index) return;
+    if (index > 200) return; //This is for video purpose TODO delete
 
     //Find bounding box
     float min_x = std::numeric_limits<float>::max();
@@ -71,7 +72,7 @@ void Ego::checkForObstacles(int index, int threshold) {
         Server::AddObstacle(obst_pcl, transformData.rgbTiming[index]);
 
         max_number_of_points = 0;
-        sleeping_index = index + 20;
+        sleeping_index = index + 500;
     }
     std::cout << current_number_of_points << std::endl;
 
@@ -132,7 +133,7 @@ Ego::Ego(std::string resources_folder) {
     std::cout << "Loading OBJs..........." << "\n";
     pointclouds.resize(files.size());
     std::transform(std::execution::par_unseq, files.begin(), files.end(), pointclouds.begin(),
-                   [](std::string file) -> Pointcloud { return Pointcloud(std::move(file)); });
+                   [](std::string file) -> Pointcloud { return Pointcloud(file); });
     std::cout << "Finished loading OBJs" << "\n";
 
     //PREPROCESSING rotate pointcloud based on steering and transform coordinates from Carla to Opengl system

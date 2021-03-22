@@ -9,7 +9,7 @@
 using namespace std;
 
 
-Pointcloud::Pointcloud(std::string filename) {
+Pointcloud::Pointcloud(const std::string& filename) {
 
     ifstream myfile;
     myfile.open(filename);

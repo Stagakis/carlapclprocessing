@@ -55,7 +55,7 @@ class Pointcloud : public Drawable{
         std::vector<Point> points;
         std::vector<glm::vec3> colors;
         void draw() override;
-        explicit Pointcloud(std::string filename);
+        explicit Pointcloud(const std::string& filename);
         Pointcloud(std::vector<Point> _points, std::vector<glm::vec3> _colors);
         void sendDataToGPU();
 };

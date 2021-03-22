@@ -23,8 +23,9 @@ int Application::AppMain() {
         cameraToLidarOffset = unreal_to_opengl_coord_system * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
-        vehicle.checkForObstacles(frameIndex, 0.0f);
-
+        for(auto& mvehicle: vehicles){
+            mvehicle.checkForObstacles(frameIndex, 0.0f);
+        }
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
@@ -124,7 +125,7 @@ void Application::Initialization() {
     //std::string resources_folder = "../resources_ego0/";
 
     vehicles.emplace_back("../resources_ego0/");
-    vehicles.emplace_back("../resources_ego1/");
+    //vehicles.emplace_back("../resources_ego1/");
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {
