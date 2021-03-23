@@ -23,8 +23,9 @@ int Application::AppMain() {
         cameraToLidarOffset = unreal_to_opengl_coord_system * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
         camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
 
-        vehicle.checkForObstacles(frameIndex, 0.0f);
-
+        for(auto& mvehicle: vehicles){
+            mvehicle.checkForObstacles(frameIndex, 0.0f);
+        }
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
