@@ -19,7 +19,6 @@ uniform int program_switcher;
 
 void main()
 {
-    float bed_level = hole_center.y + 0.1f;
     switch(program_switcher){
         case 0:
             TexCoord = vec2(aTexCoord.x, aTexCoord.y);
@@ -27,15 +26,12 @@ void main()
             break;
 
         case 1:
-            fragColor = vec3(1.0f);
             vec4 world_pos = model*vec4(aPos, 1.0f);
 
             gl_Position = projection * view * world_pos;
             gl_PointSize = max(1.0f, 10.0f -0.25f*length(gl_Position));
             fragDistance = length(gl_Position);
 
-            if(world_pos.y <= bed_level) fragColor = vec3(0.15f, 0.15f, 0.9f);
-            else fragColor = vec3( 0.4f,(world_pos.y + bed_level)*0.4, 0.4f);
             fragColor = color;
 
             /*
