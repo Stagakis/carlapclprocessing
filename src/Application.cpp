@@ -123,8 +123,6 @@ void Application::Initialization() {
 
     camera = Camera();
 
-    //std::string resources_folder = "../resources_ego0/";
-
     vehicles.emplace_back("../resources_ego0/");
     //vehicles.emplace_back("../resources_ego1/");
 }
