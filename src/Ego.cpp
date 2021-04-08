@@ -58,7 +58,7 @@ void Ego::checkForObstacles(int index, int threshold) {
         max_number_of_points = 0;
         sleeping_index = index + 500;
     }
-    std::cout << indeces.size() << std::endl;
+    //std::cout << indeces.size() << std::endl;
     last_index = index;
 }
 
@@ -136,4 +136,44 @@ Ego::Ego(std::string resources_folder) {
         pointclouds[i].ypr = glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]);; // glm::vec3(-transformData.lidarRot[i][1], transformData.lidarRot[i][0], -transformData.lidarRot[i][2]); // roll is minus because we look at the -z axis
         pointclouds[i].updateModelMatrix();
     }
+}
+
+void Ego::handleObstacle(const obstacle &obs) {
+    std::cout << "Handling Obstacle" << std::endl;
+    auto pcl = pointclouds[124];
+    glm::vec3 lidar_position = transformData.lidarPos[124];
+
+    auto bb = obs.bb;
+
+    glm::vec3 point1 = pcl.model * pcl.rotationMatrix * glm::vec4(bb.min_x, bb.min_y, bb.min_z, 1);
+    glm::vec3 point2 = pcl.model * pcl.rotationMatrix * glm::vec4(bb.max_x, bb.max_y, bb.max_z, 1);
+    auto center = (point1 + point2)/2.0f;
+    auto diameter = glm::length(point1 - point2);
+    auto distance = glm::length(lidar_position - center);
+    if(distance < diameter){
+        std::cout << "Sending to server for validation" << std::endl;
+
+        std::vector<glm::vec3> points;
+        std::vector<glm::vec3> colors;
+        //Extract the points in the bounding box
+        for(int i = 0; i < pcl.points.size(); i++){
+            auto& p = pcl.points[i];
+            auto& c = pcl.colors[i];
+            if(p.x > bb.min_x && p.x < bb.max_x &&
+                p.y > bb.min_y && p.y < bb.max_y &&
+                p.z > bb.min_z && p.z < bb.max_z)
+            {
+                points.push_back(p);
+                colors.push_back(c);
+            }
+        }
+
+
+        auto obst_pcl = Pointcloud(points, colors);
+        obst_pcl.translation = pcl.translation;
+        obst_pcl.ypr = pcl.ypr;
+        obst_pcl.updateModelMatrix();
+        Server::ValidateObstacle(obs, obst_pcl);
+    }
+
 }

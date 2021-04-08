@@ -84,11 +84,13 @@ int Application::AppMain() {
             glEnable(GL_DEPTH_TEST);
         }
         else {
-            vehicle.pointclouds[frameIndex].draw();
             auto obstacles = Server::GetRelevantObstacles(vehicle.transformData.lidarPos[frameIndex], vehicle.transformData.lidarRot[frameIndex]);
+
+            vehicle.pointclouds[frameIndex].draw();
             for (auto& obst : obstacles) {
-                ourShader.setMat4("model", obst->model);
-                obst->draw();
+                vehicle.handleObstacle(*obst);
+                ourShader.setMat4("model", obst->pcl.model);
+                obst->pcl.draw();
             }
         }
         ImguiManager::DrawAllWindows();

@@ -7,7 +7,7 @@
 #include "Parsers/ImuParser.h"
 #include "Parsers/TransformParser.h"
 #include "Parsers/SteeringParser.h"
-
+#include "Server.h"
 
 
 class Ego {
@@ -18,6 +18,7 @@ public:
     TransformParser transformData;
     SteeringParser steeringData;
 
+    void handleObstacle(const obstacle& obs);
     void checkForObstacles(int index, int threshold);
     explicit Ego(std::string resources_folder);
 

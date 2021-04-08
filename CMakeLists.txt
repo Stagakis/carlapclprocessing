@@ -71,7 +71,7 @@ target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/
 
 if(CMAKE_COMPILER_IS_GNUCXX)
         message(STATUS "GCC detected, adding compile flags")
-        target_compile_options(MyOpengl PRIVATE -Wall -Wextra -pedantic-errors)
+        target_compile_options(MyOpengl PRIVATE -Wall -pedantic-errors -Wreturn-local-addr)
 else()
         target_compile_options(MyOpengl PRIVATE -pedantic-errors)
 endif()

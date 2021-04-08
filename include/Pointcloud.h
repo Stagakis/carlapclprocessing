@@ -6,10 +6,7 @@
 #include "Drawable.h"
 #include "glm/glm.hpp"
 
-struct BoundingBox {
-    float min_x, min_y, min_z;
-    float max_x, max_y, max_z;
-};
+
 
 static const glm::mat4 pcl_to_opengl_coord_system = glm::transpose(
     glm::mat4(

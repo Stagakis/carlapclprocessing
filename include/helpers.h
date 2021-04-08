@@ -1,6 +1,5 @@
 #ifndef MYOPENGL_HELPERS_H
 #define MYOPENGL_HELPERS_H
-
 #include <vector>
 #ifndef WINDOWS
 	#include <glob.h>
@@ -15,6 +14,11 @@
 #include <sstream>
 #include <fstream>
 
+
+struct BoundingBox {
+    float min_x, min_y, min_z;
+    float max_x, max_y, max_z;
+};
 
 BoundingBox calculateBoundingBox_color(const Pointcloud& pcl, const glm::vec3& color);
 BoundingBox calculateBoundingBox(const Pointcloud& pcl);
