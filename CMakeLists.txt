@@ -65,6 +65,8 @@ add_executable(MyOpengl
         )
 
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Parsers/)
+target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Singletons/)
 target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)
 
 if(CMAKE_COMPILER_IS_GNUCXX)

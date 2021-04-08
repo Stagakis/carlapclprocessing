@@ -5,41 +5,29 @@
 #include <future>
 #include "glm/gtx/string_cast.hpp"
 #include <glm/gtx/transform.hpp>
-
+#include "Server.h"
 void Ego::checkForObstacles(int index, int threshold) {
+    auto & pcl = pointclouds[index];
+
     static int last_index = -1;
-    static int sleeping_index = 100;//it starts at 100 because it also detects random stuff in the beggining
+    static int sleeping_index = 100;//it starts at 100 because it also detects random stuff in the beginning
     static size_t max_number_of_points = 0;
 
     if (index < sleeping_index || index == last_index) return;
     if (index > 200) return; //This is for video purpose TODO delete
 
     //Find bounding box of the blue area
-    float min_x = std::numeric_limits<float>::max();
-    float min_z = std::numeric_limits<float>::max();
-    float max_x = std::numeric_limits<float>::min();
-    float max_z = std::numeric_limits<float>::min();
-    for (int i = 0; i < pointclouds[index].points.size(); i++) {
-        auto& c = pointclouds[index].colors[i];
-        if (c == glm::vec3(0, 0, 1)) { 
-            auto& p = pointclouds[index].points[i];
-            if (p.x > max_x) max_x = p.x;
-            if (p.z > max_z) max_z = p.z;
-            if (p.x < min_x) min_x = p.x;
-            if (p.z < min_z) min_z = p.z;
-        }   
-    }
-
+    auto bb = calculateBoundingBox_color(pcl, glm::vec3(0,0,1));
     float shrink_factor = 0.1f;
-    float x_len = (1 - shrink_factor) * std::abs(max_x - min_x);
+    float x_len = (1 - shrink_factor) * std::abs(bb.max_x - bb.min_x);
     float z_len = 7; // std::min((1 - shrink_factor) * std::abs(max_z - min_z), 10.0f);
-    glm::vec3 corner = glm::vec3(min_x + shrink_factor * std::abs(max_x - min_x), 0 , max_z); //max_z because we are looking at -z
+    glm::vec3 corner = glm::vec3(bb.min_x + shrink_factor * std::abs(bb.max_x - bb.min_x), 0 , bb.max_z); //max_z because we are looking at -z
 
     std::vector<size_t> indeces = std::vector<size_t>();
 
-    for (int i = 0; i < pointclouds[index].points.size(); i++) {
-        auto& p = pointclouds[index].points[i];
-        auto& c = pointclouds[index].colors[i];
+    for (int i = 0; i < pcl.points.size(); i++) {
+        auto& p = pcl.points[i];
+        auto& c = pcl.colors[i];
 
         if (p.x < corner.x || p.z > corner.z || p.x - corner.x > x_len || corner.z - p.z > z_len) {
             continue;
@@ -55,15 +43,17 @@ void Ego::checkForObstacles(int index, int threshold) {
     else{
         std::cout << "Sending hole..." << std::endl;
         std::vector<glm::vec3> points = std::vector<glm::vec3>(indeces.size());
-        for (size_t i = 0; i < indeces.size() ; i++) {
-            points[i] = pointclouds[index].points[indeces[i]];
-        }
+        std::transform(std::execution::par_unseq, indeces.begin(), indeces.end(), points.begin(),
+                       [&pcl](size_t index) -> glm::vec3{return pcl.points[index];});
         std::vector<glm::vec3> colors = std::vector<glm::vec3>(points.size(), glm::vec3(1,0,0));
+
+        auto obstacle_bb = calculateBoundingBox_color(pcl, glm::vec3(1,0,0));
+
         auto obst_pcl = Pointcloud(points, colors);
-        obst_pcl.translation = pointclouds[index].translation;
-        obst_pcl.ypr = pointclouds[index].ypr;
+        obst_pcl.translation = pcl.translation;
+        obst_pcl.ypr = pcl.ypr;
         obst_pcl.updateModelMatrix();
-        Server::AddObstacle(obst_pcl, transformData.rgbTiming[index]);
+        Server::AddObstacle(obst_pcl, transformData.rgbTiming[index], obstacle_bb);
 
         max_number_of_points = 0;
         sleeping_index = index + 500;

@@ -9,15 +9,17 @@
 #include <GLFW/glfw3.h>
 #include "iostream"
 #include "Pointcloud.h"
-#include "Application.h"
+#include "ImageDrawable.h"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <sstream>
+#include <fstream>
 
-#define LOG(X) std::cout << X << std::endl
+
+BoundingBox calculateBoundingBox_color(const Pointcloud& pcl, const glm::vec3& color);
+BoundingBox calculateBoundingBox(const Pointcloud& pcl);
 
 void saveImage(const char* filepath, GLFWwindow* w) ;
-
 
 void saveFrame(int frameIndex, int numberLength, GLFWwindow* w);
 

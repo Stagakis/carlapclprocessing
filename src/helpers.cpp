@@ -9,6 +9,52 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+
+BoundingBox calculateBoundingBox_color(const Pointcloud& pcl, const glm::vec3& color) {
+    //Find bounding box of the blue area
+    BoundingBox bb;
+    bb.min_x = std::numeric_limits<float>::max();
+    bb.min_y = std::numeric_limits<float>::max();
+    bb.min_z = std::numeric_limits<float>::max();
+    bb.max_x = std::numeric_limits<float>::min();
+    bb.max_y = std::numeric_limits<float>::min();
+    bb.max_z = std::numeric_limits<float>::min();
+    for (int i = 0; i < pcl.points.size(); i++) {
+        auto& c = pcl.colors[i];
+        if (c == color) {
+            auto& p = pcl.points[i];
+            if (p.x > bb.max_x) bb.max_x = p.x;
+            if (p.y > bb.max_y) bb.max_y = p.y;
+            if (p.z > bb.max_z) bb.max_z = p.z;
+            if (p.x < bb.min_x) bb.min_x = p.x;
+            if (p.y < bb.min_y) bb.min_y = p.y;
+            if (p.z < bb.min_z) bb.min_z = p.z;
+        }
+    }
+    return bb;
+}
+BoundingBox calculateBoundingBox(const Pointcloud& pcl) {
+    //Find bounding box of the blue area
+    BoundingBox bb;
+    bb.min_x = std::numeric_limits<float>::max();
+    bb.min_y = std::numeric_limits<float>::max();
+    bb.min_z = std::numeric_limits<float>::max();
+    bb.max_x = std::numeric_limits<float>::min();
+    bb.max_y = std::numeric_limits<float>::min();
+    bb.max_z = std::numeric_limits<float>::min();
+    for (int i = 0; i < pcl.points.size(); i++) {
+        auto& p = pcl.points[i];
+        if (p.x > bb.max_x) bb.max_x = p.x;
+        if (p.y > bb.max_y) bb.max_y = p.y;
+        if (p.z > bb.max_z) bb.max_z = p.z;
+        if (p.x < bb.min_x) bb.min_x = p.x;
+        if (p.y < bb.min_y) bb.min_y = p.y;
+        if (p.z < bb.min_z) bb.min_z = p.z;
+    }
+    return bb;
+}
+
+
 void saveImage(const char* filepath, GLFWwindow* w){
     int width, height;
     glfwGetFramebufferSize(w, &width, &height);
@@ -42,38 +88,6 @@ void loadTexture(std::vector<ImageData>* imgData, const std::string filepath, in
     imgData->operator[](i).nrChannels = nrChannels;
     imgData->operator[](i).name = std::string(filepath);
 }
-/*
-void applyHole2Pointcloud(Pointcloud& pcl, Hole& hole){
-    float bed_level = hole.center.y + 0.1f;
-    std::vector<Point> out_points;
-    auto pcl_center = glm::vec3(pcl.model[3][0], pcl.model[3][1], pcl.model[3][2]);
-    //LOG("pcl_center    : " << pcl_center.x << " " << pcl_center.y << " " << pcl_center.z);
-
-    for (int i = 0; i < pcl.points.size(); i++) {
-        glm::vec3 aPos(pcl.points[i].x, pcl.points[i].y,
-                       pcl.points[i].z);
-        glm::vec4 world_pos = pcl.model * Carla_to_Opengl_coordinates * glm::vec4(aPos, 1.0f);
-        if (glm::distance(glm::vec3(world_pos), hole.center) <= hole.radius && world_pos.y <= bed_level) {
-            //LOG("Distance before: " << glm::distance(glm::vec3(world_pos), hole.center));
-            std::cout << "BEFORE  " << glm::to_string(world_pos) << std::endl;
-            world_pos.y -= hole.depth - (glm::distance(glm::vec3(world_pos), hole.center) / hole.radius) * hole.depth;
-            aPos.z += hole.depth - (glm::distance(glm::vec3(world_pos), hole.center) / hole.radius) * hole.depth; //TODO fix the use of world_pos
-            std::cout << "AFTER  " << glm::to_string(world_pos) << std::endl;
-
-            glm::vec3 camera_to_point_ray = glm::vec3(world_pos) - pcl_center;
-            float modifier = (bed_level - world_pos.y) / camera_to_point_ray.y;
-
-            glm::vec3 intersection_point = glm::vec3(world_pos) + camera_to_point_ray * modifier;
-
-            if (distance(intersection_point, hole.center) > hole.radius) continue;
-
-        }
-        world_pos = glm::transpose(Carla_to_Opengl_coordinates) * world_pos;
-        out_points.emplace_back(aPos[0], aPos[1], aPos[2]);
-    }
-    pcl.points = std::vector<Point>(out_points);
-}
-*/
 
 void save2obj(const std::string filename, std::vector<glm::vec3> points){
     std::ofstream myfile;

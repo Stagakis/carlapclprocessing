@@ -6,6 +6,11 @@
 #include "Drawable.h"
 #include "glm/glm.hpp"
 
+struct BoundingBox {
+    float min_x, min_y, min_z;
+    float max_x, max_y, max_z;
+};
+
 static const glm::mat4 pcl_to_opengl_coord_system = glm::transpose(
     glm::mat4(
         1.0f, 0.0f, 0.0f, 0.0f,
@@ -29,6 +34,8 @@ class Pointcloud : public Drawable{
         std::vector<glm::vec3> points;
         std::vector<glm::vec3> colors;
         void draw() override;
+
+
         explicit Pointcloud(const std::string& filename);
         Pointcloud(std::vector<glm::vec3> _points, std::vector<glm::vec3> _colors);
         void sendDataToGPU();

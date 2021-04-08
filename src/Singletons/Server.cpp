@@ -3,9 +3,9 @@
 std::vector<obstacle> Server::obstacles = std::vector<obstacle>();
 
 
-void Server::AddObstacle(Pointcloud pcl, timing& tim) {
+void Server::AddObstacle(const Pointcloud& pcl, const timing& tim, const BoundingBox& bb) {
     auto center = glm::vec3(0, 0, 0);
-    auto obs = obstacle(tim, center, pcl);
+    auto obs = obstacle(tim, center, pcl, bb);
     obstacles.push_back(obs);
 }
 

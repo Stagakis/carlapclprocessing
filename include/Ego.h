@@ -9,6 +9,7 @@
 #include "Parsers/SteeringParser.h"
 
 
+
 class Ego {
 public:
     std::vector<Pointcloud> pointclouds;    //lidar
@@ -16,9 +17,11 @@ public:
     ImuParser imu_data;                     //Deprecated use
     TransformParser transformData;
     SteeringParser steeringData;
-    void checkForObstacles(int index, int threshold);
 
+    void checkForObstacles(int index, int threshold);
     explicit Ego(std::string resources_folder);
+
+
 
 };
 
