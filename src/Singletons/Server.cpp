@@ -20,5 +20,19 @@ std::vector<obstacle *> Server::GetRelevantObstacles(glm::vec3 vehicle_pos, glm:
 }
 
 void Server::ValidateObstacle(const obstacle &obs, const Pointcloud &pcl) {
-    //Check if there is a need to update the database
+    float threshold_factor = 1.15;
+    for(auto& obstacle: obstacles){
+        if(obstacle.id == obs.id){
+            auto& bb_old = obstacle.bb;
+            auto& bb_new = obs.bb;
+            if( std::max(bb_old.area, bb_new.area) > threshold_factor * std::min(bb_old.area, bb_new.area)){
+                std::cout << "Updating Database..." << std::endl;
+                obstacle = obs;
+            }
+            else{
+                std::cout << "No significant change detected..." << std::endl;
+            }
+            break;
+        }
+    }
 }

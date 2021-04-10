@@ -85,8 +85,8 @@ int Application::AppMain() {
         }
         else {
             auto obstacles = Server::GetRelevantObstacles(vehicle.transformData.lidarPos[frameIndex], vehicle.transformData.lidarRot[frameIndex]);
-
             vehicle.pointclouds[frameIndex].draw();
+
             for (auto& obst : obstacles) {
                 vehicle.handleObstacle(*obst);
                 ourShader.setMat4("model", obst->pcl.model);
@@ -126,7 +126,7 @@ void Application::Initialization() {
     camera = Camera();
 
     vehicles.emplace_back("../resources_ego0/");
-    //vehicles.emplace_back("../resources_ego1/");
+    vehicles.emplace_back("../resources_ego1/");
 }
 
 void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods) {

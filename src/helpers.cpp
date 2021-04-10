@@ -31,6 +31,7 @@ BoundingBox calculateBoundingBox_color(const Pointcloud& pcl, const glm::vec3& c
             if (p.z < bb.min_z) bb.min_z = p.z;
         }
     }
+    bb.area = (bb.max_x - bb.min_x) * (bb.max_y - bb.min_y) * (bb.max_z - bb.min_z);
     return bb;
 }
 BoundingBox calculateBoundingBox(const Pointcloud& pcl) {

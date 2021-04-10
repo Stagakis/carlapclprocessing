@@ -151,8 +151,7 @@ void Ego::handleObstacle(const obstacle &obs) {
     auto diameter = glm::length(point1 - point2);
     auto distance = glm::length(lidar_position - center);
     if(distance < diameter){
-        std::cout << "Sending to server for validation" << std::endl;
-
+        std::cout << "Extracting Points inside the bounding box" << std::endl;
         std::vector<glm::vec3> points;
         std::vector<glm::vec3> colors;
         //Extract the points in the bounding box
@@ -168,7 +167,7 @@ void Ego::handleObstacle(const obstacle &obs) {
             }
         }
 
-
+        std::cout << "Sending to server for validation" << std::endl;
         auto obst_pcl = Pointcloud(points, colors);
         obst_pcl.translation = pcl.translation;
         obst_pcl.ypr = pcl.ypr;
