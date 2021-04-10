@@ -27,7 +27,6 @@ void ImguiManager::InitializeImguiManager(Application& _app) {
 }
 
 void ImguiManager::imGuiDrawWindow() {
-
     auto& vehicle = app->vehicles[app->active_vehicle];
 
     ImGui::Begin("Control");   // Create a window called "Hello, world!" and append into it.
@@ -41,7 +40,6 @@ void ImguiManager::imGuiDrawWindow() {
     ImGui::Text("CameraYP: %f %f  ", app->camera.Yaw, app->camera.Pitch);
     ImGui::Text("LidarSensorYPR: %f %f %f ", vehicle.pointclouds[app->frameIndex].ypr[0], vehicle.pointclouds[app->frameIndex].ypr[1], vehicle.pointclouds[app->frameIndex].ypr[2]);
     ImGui::Text("LidarSensorTranslationVector: %f %f %f ", vehicle.pointclouds[app->frameIndex].translation[0], vehicle.pointclouds[app->frameIndex].translation[1], vehicle.pointclouds[app->frameIndex].translation[2]);
-    // WARNING while the above does report XYZ in OpenGL coordinates it does not account for roll pitch yaw rotation 
 
     ImGui::Checkbox("PostProcessing", &app->usePostprocessing);
     ImGui::Checkbox("StartRecording", &app->recording);

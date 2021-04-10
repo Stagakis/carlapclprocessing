@@ -34,6 +34,10 @@ struct Hole{
     Hole()= default;
 };
 
+static struct SimulationStateVariables{
+    size_t frameIndex=0;
+}State;
+
 
 class Application : public IWindowEventListener{
 public:

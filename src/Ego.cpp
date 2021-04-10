@@ -6,6 +6,9 @@
 #include "glm/gtx/string_cast.hpp"
 #include <glm/gtx/transform.hpp>
 #include "Server.h"
+
+size_t Ego::frameIndex=0;
+
 void Ego::checkForObstacles(int index, int threshold) {
     auto & pcl = pointclouds[index];
 
@@ -140,8 +143,8 @@ Ego::Ego(std::string resources_folder) {
 
 void Ego::handleObstacle(const obstacle &obs) {
     std::cout << "Handling Obstacle" << std::endl;
-    auto pcl = pointclouds[124];
-    glm::vec3 lidar_position = transformData.lidarPos[124];
+    auto pcl = pointclouds[frameIndex];
+    glm::vec3 lidar_position = transformData.lidarPos[frameIndex];
 
     auto bb = obs.bb;
 
@@ -175,4 +178,18 @@ void Ego::handleObstacle(const obstacle &obs) {
         Server::ValidateObstacle(obs, obst_pcl);
     }
 
+}
+
+Pointcloud &Ego::GetPointcloud() {    return pointclouds[frameIndex];}
+
+ImageDrawable &Ego::GetImageDrawable() {    return images[frameIndex];}
+
+float Ego::GetSteering() {    return steeringData.angles[frameIndex];}
+
+std::pair<glm::vec3, glm::vec3> Ego::GetLidarTransform() {
+    return std::pair<glm::vec3, glm::vec3>(transformData.lidarPos[frameIndex], transformData.lidarRot[frameIndex]);
+}
+
+std::pair<glm::vec3, glm::vec3> Ego::GetCameraTransform() {
+    return std::pair<glm::vec3, glm::vec3>(transformData.rgbPos[frameIndex], transformData.rgbRot[frameIndex]);
 }

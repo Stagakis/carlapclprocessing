@@ -19,9 +19,11 @@ int Application::AppMain() {
     while (!glfwWindowShouldClose(window))
     {
         auto& vehicle = vehicles[active_vehicle];
+        auto lidarTransform = vehicle.GetLidarTransform();
+        auto cameraTransform = vehicle.GetCameraTransform();
 
-        cameraToLidarOffset = unreal_to_opengl_coord_system * glm::vec4(vehicle.transformData.rgbPos[frameIndex] - vehicle.transformData.lidarPos[frameIndex] , 1.0f);
-        camera.SetFollowingObject(&vehicle.pointclouds[frameIndex], cameraToLidarOffset);
+        cameraToLidarOffset = unreal_to_opengl_coord_system * glm::vec4(cameraTransform.first - lidarTransform.first , 1.0f);
+        camera.SetFollowingObject(&vehicle.GetPointcloud(), cameraToLidarOffset);
 
         for(auto& mvehicle: vehicles){
             mvehicle.checkForObstacles(frameIndex, 0.0f);
@@ -52,18 +54,18 @@ int Application::AppMain() {
 
         ourShader.setInt("program_switcher", 0);
         glDisable(GL_DEPTH_TEST);
-        vehicle.images[frameIndex].draw();
+        vehicle.GetImageDrawable().draw();
         glEnable(GL_DEPTH_TEST);
 
         ourShader.setInt("program_switcher", 1);
-        ourShader.setMat4("model", vehicle.pointclouds[frameIndex].model);
+        ourShader.setMat4("model", vehicle.GetPointcloud().model);
         //LOG(glm::to_string(glm::vec3(pointclouds[frameIndex].model * glm::vec4(-0.711443, -7.504014, 2.412690, 1.0f))));
         ourShader.setVec3("cameraPos", camera.Position);
 
         //POST PROCESSING
         if(usePostprocessing) {
             glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-            vehicle.pointclouds[frameIndex].draw();
+            vehicle.GetPointcloud().draw();
             //glBindFramebuffer(GL_FRAMEBUFFER, 0);
             postProcessShader.use();
             postProcessShader.setInt("program_switcher", 0);
@@ -74,18 +76,18 @@ int Application::AppMain() {
             glDisable(GL_BLEND);
 
             for(int i = 0; i < iterNumber ; ++i)
-                vehicle.images[frameIndex].draw(fbTexture);
+                vehicle.GetImageDrawable().draw(fbTexture);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
             glEnable(GL_BLEND);
             postProcessShader.setFloat("alpha_value", 0.5f);
 
-            vehicle.images[frameIndex].draw(fbTexture);
+            vehicle.GetImageDrawable().draw(fbTexture);
             glEnable(GL_DEPTH_TEST);
         }
         else {
-            auto obstacles = Server::GetRelevantObstacles(vehicle.transformData.lidarPos[frameIndex], vehicle.transformData.lidarRot[frameIndex]);
-            vehicle.pointclouds[frameIndex].draw();
+            auto obstacles = Server::GetRelevantObstacles(lidarTransform.first, lidarTransform.second);
+            vehicle.GetPointcloud().draw();
 
             for (auto& obst : obstacles) {
                 vehicle.handleObstacle(*obst);
@@ -138,9 +140,11 @@ void Application::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int
     }
     if(glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS){
         frameIndex = std::min(vehicles[active_vehicle].pointclouds.size() - 1, frameIndex + 1);
+        Ego::frameIndex = frameIndex;
     }
     if(glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS){
         frameIndex = (size_t)std::max(0 , (int(frameIndex))-1);
+        Ego::frameIndex = frameIndex;
     }
     if(glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS){
         active_vehicle = (active_vehicle + 1)%vehicles.size(); //Cycle through the available vehicles
