@@ -14,11 +14,11 @@ class Ego {
 public:
     std::vector<Pointcloud> pointclouds;    //lidar
 
-    Pointcloud& GetPointcloud();
-    ImageDrawable& GetImageDrawable();
-    std::pair<glm::vec3, glm::vec3> GetLidarTransform();
-    std::pair<glm::vec3, glm::vec3> GetCameraTransform();
-    float GetSteering();
+    Pointcloud& get_pointcloud();
+    ImageDrawable& get_image();
+    std::pair<glm::vec3, glm::vec3> get_lidar_transformation();
+    std::pair<glm::vec3, glm::vec3> get_camera_transformation();
+    float get_steering();
 
     void handleObstacle(const obstacle& obs);
     void checkForObstacles(int index, int threshold);

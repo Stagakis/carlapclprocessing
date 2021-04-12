@@ -181,16 +181,16 @@ void Ego::handleObstacle(const obstacle &obs) {
 
 }
 
-Pointcloud &Ego::GetPointcloud() {    return pointclouds[frameIndex];}
+Pointcloud &Ego::get_pointcloud() {    return pointclouds[frameIndex];}
 
-ImageDrawable &Ego::GetImageDrawable() {    return images[frameIndex];}
+ImageDrawable &Ego::get_image() {    return images[frameIndex];}
 
-float Ego::GetSteering() {    return steeringData.angles[frameIndex];}
+float Ego::get_steering() {    return steeringData.angles[frameIndex];}
 
-std::pair<glm::vec3, glm::vec3> Ego::GetLidarTransform() {
+std::pair<glm::vec3, glm::vec3> Ego::get_lidar_transformation() {
     return std::pair<glm::vec3, glm::vec3>(transformData.lidarPos[frameIndex], transformData.lidarRot[frameIndex]);
 }
 
-std::pair<glm::vec3, glm::vec3> Ego::GetCameraTransform() {
+std::pair<glm::vec3, glm::vec3> Ego::get_camera_transformation() {
     return std::pair<glm::vec3, glm::vec3>(transformData.rgbPos[frameIndex], transformData.rgbRot[frameIndex]);
 }
