@@ -10,6 +10,7 @@ The project is striving to be portable, everything needed should be in deps fold
 
 # Installation and running
 
+Until some issued with the commit history are fixed, I recommend you to use git shallow clone. After the cloning is complete, navigate to the project folder and run:
 ```
 mkdir build
 cd build
