@@ -6,7 +6,7 @@ Download the resources (lidar pointcloud, images, etc) and extract them. The pro
 
 # Dependencies
 
-Everything should be in deps folder.
+The project is striving to be portable, everything needed should be in deps folder.
 
 # Installation and running
 
