@@ -144,7 +144,7 @@ Ego::Ego(std::string resources_folder) {
 void Ego::handleObstacle(const obstacle &obs) {
     std::cout << "Handling Obstacle" << std::endl;
     auto pcl = pointclouds[frameIndex];
-    glm::vec3 lidar_position = transformData.lidarPos[frameIndex];
+    glm::vec3 lidar_position = unreal_to_opengl_coord_system * glm::vec4(transformData.lidarPos[frameIndex] , 1.0f);
 
     auto bb = obs.bb;
 
@@ -153,6 +153,7 @@ void Ego::handleObstacle(const obstacle &obs) {
     auto center = (point1 + point2)/2.0f;
     auto diameter = glm::length(point1 - point2);
     auto distance = glm::length(lidar_position - center);
+
     if(distance < diameter){
         std::cout << "Extracting Points inside the bounding box" << std::endl;
         std::vector<glm::vec3> points;
