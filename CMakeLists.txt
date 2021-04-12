@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(MyOpengl)
+project(ARCarla)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -48,7 +48,7 @@ target_compile_definitions(imgui PUBLIC -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_include_directories(imgui PUBLIC ${IMGUI_PATH}/ ${IMGUI_PATH}/examples/ ${IMGUI_PATH}/backends/)
 target_link_libraries(imgui glad glfw)
 
-add_executable(MyOpengl
+add_executable(ARCarla
         src/main.cpp
         src/Pointcloud.cpp
         src/Parsers/ImuParser.cpp
@@ -64,19 +64,19 @@ add_executable(MyOpengl
         src/Singletons/Server.cpp
         )
 
-target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Parsers/)
-target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Singletons/)
-target_include_directories(MyOpengl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)
+target_include_directories(ARCarla PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
+target_include_directories(ARCarla PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Parsers/)
+target_include_directories(ARCarla PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Singletons/)
+target_include_directories(ARCarla PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/deps/stb/)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
         message(STATUS "GCC detected, adding compile flags")
-        target_compile_options(MyOpengl PRIVATE -Wall -pedantic-errors -Wreturn-local-addr)
+        target_compile_options(ARCarla PRIVATE -Wall -pedantic-errors -Wreturn-local-addr)
 else()
-        target_compile_options(MyOpengl PRIVATE -pedantic-errors)
+        target_compile_options(ARCarla PRIVATE -pedantic-errors)
 endif()
 
-target_link_libraries(MyOpengl glfw glad glm imgui tbb)
+target_link_libraries(ARCarla glfw glad glm imgui tbb)
 
 #Create links to the shader files
 file(CREATE_LINK ${CMAKE_CURRENT_SOURCE_DIR}/shaders/fragmentShader.shader ${CMAKE_CURRENT_BINARY_DIR}/fragmentShader.shader)
