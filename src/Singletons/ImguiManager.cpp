@@ -38,8 +38,8 @@ void ImguiManager::imGuiDrawWindow() {
     ImGui::Text("CameraPos: %f %f %f ", app->camera.Position[0], app->camera.Position[1], app->camera.Position[2]);
     ImGui::Text("CameraFront: %f %f %f ", app->camera.Front[0], app->camera.Front[1], app->camera.Front[2]);
     ImGui::Text("CameraYP: %f %f  ", app->camera.Yaw, app->camera.Pitch);
-    ImGui::Text("LidarSensorYPR: %f %f %f ", vehicle.pointclouds[app->frameIndex].ypr[0], vehicle.pointclouds[app->frameIndex].ypr[1], vehicle.pointclouds[app->frameIndex].ypr[2]);
-    ImGui::Text("LidarSensorTranslationVector: %f %f %f ", vehicle.pointclouds[app->frameIndex].translation[0], vehicle.pointclouds[app->frameIndex].translation[1], vehicle.pointclouds[app->frameIndex].translation[2]);
+    ImGui::Text("LidarSensorYPR: %f %f %f ", vehicle.data.pointclouds[app->frameIndex].ypr[0], vehicle.data.pointclouds[app->frameIndex].ypr[1], vehicle.data.pointclouds[app->frameIndex].ypr[2]);
+    ImGui::Text("LidarSensorTranslationVector: %f %f %f ", vehicle.data.pointclouds[app->frameIndex].translation[0], vehicle.data.pointclouds[app->frameIndex].translation[1], vehicle.data.pointclouds[app->frameIndex].translation[2]);
 
     ImGui::Checkbox("PostProcessing", &app->usePostprocessing);
     ImGui::Checkbox("StartRecording", &app->recording);

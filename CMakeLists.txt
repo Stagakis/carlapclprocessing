@@ -62,7 +62,7 @@ add_executable(ARCarla
         src/helpers.cpp
         src/Ego.cpp
         src/Singletons/Server.cpp
-        )
+        src/SensorData.cpp include/SensorData.h)
 
 target_include_directories(ARCarla PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
 target_include_directories(ARCarla PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/Parsers/)
