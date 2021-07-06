@@ -25,7 +25,10 @@ Pointcloud::Pointcloud(const std::string& filename) {
             glm::vec3 new_point;
             in >> new_point.x >> new_point.y >> new_point.z;
             points.push_back(new_point);
-            colors.emplace_back(1.0f, 1.0f, 1.0f);
+
+            glm::vec3 new_color;
+            in >> new_color.x >> new_color.y >> new_color.z;
+            colors.emplace_back(new_color);
         }
 
     }

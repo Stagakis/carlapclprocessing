@@ -2,7 +2,6 @@
 
 std::vector<obstacle> Server::obstacles = std::vector<obstacle>();
 
-
 void Server::AddObstacle(const Pointcloud& pcl, const timing& tim, const BoundingBox& bb) {
     auto center = glm::vec3(0, 0, 0);
 

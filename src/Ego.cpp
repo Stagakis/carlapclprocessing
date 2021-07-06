@@ -2,9 +2,6 @@
 #include "helpers.h"
 #include <algorithm>
 #include <execution>
-#include <future>
-#include "glm/gtx/string_cast.hpp"
-#include <glm/gtx/transform.hpp>
 #include "Server.h"
 
 
@@ -49,12 +46,14 @@ void Ego::checkForObstacles(int index, int threshold) {
                        [&pcl](size_t index) -> glm::vec3{return pcl.points[index];});
         std::vector<glm::vec3> colors = std::vector<glm::vec3>(points.size(), glm::vec3(1,0,0));
 
-        auto obstacle_bb = calculateBoundingBox_color(pcl, glm::vec3(1,0,0));
 
         auto obst_pcl = Pointcloud(points, colors);
         obst_pcl.translation = pcl.translation;
         obst_pcl.ypr = pcl.ypr;
         obst_pcl.updateModelMatrix();
+
+        auto obstacle_bb = calculateBoundingBox_color(obst_pcl, glm::vec3(1,0,0));
+
         Server::AddObstacle(obst_pcl, data.get_rgb_timing(), obstacle_bb);
 
         max_number_of_points = 0;
@@ -64,9 +63,7 @@ void Ego::checkForObstacles(int index, int threshold) {
     last_index = index;
 }
 
-Ego::Ego(const std::string& resources_folder):data(resources_folder) {
-
-}
+Ego::Ego(const std::string& resources_folder):data(resources_folder) {}
 
 void Ego::handleObstacle(const obstacle &obs) {
     std::cout << "Handling Obstacle" << std::endl;
@@ -76,8 +73,8 @@ void Ego::handleObstacle(const obstacle &obs) {
 
     auto bb = obs.bb;
 
-    glm::vec3 point1 = pcl.model * pcl.rotationMatrix * glm::vec4(bb.min_x, bb.min_y, bb.min_z, 1);
-    glm::vec3 point2 = pcl.model * pcl.rotationMatrix * glm::vec4(bb.max_x, bb.max_y, bb.max_z, 1);
+    glm::vec3 point1 = bb.translationMatrix * bb.rotationMatrix * glm::vec4(bb.min_x, bb.min_y, bb.min_z,1);
+    glm::vec3 point2 = bb.translationMatrix * bb.rotationMatrix * glm::vec4(bb.max_x, bb.max_y, bb.max_z, 1);
     auto center = (point1 + point2)/2.0f;
     auto diameter = glm::length(point1 - point2);
     auto distance = glm::length(lidar_position - center);
@@ -108,19 +105,3 @@ void Ego::handleObstacle(const obstacle &obs) {
     }
 
 }
-
-/*
-Pointcloud &Ego::get_pointcloud() {    return pointclouds[frameIndex];}
-
-ImageDrawable &Ego::get_image() {    return images[frameIndex];}
-
-float Ego::get_steering() {    return steeringData.angles[frameIndex];}
-
-std::pair<glm::vec3, glm::vec3> Ego::get_lidar_transformation() {
-    return std::pair<glm::vec3, glm::vec3>(transformData.lidarPos[frameIndex], transformData.lidarRot[frameIndex]);
-}
-
-std::pair<glm::vec3, glm::vec3> Ego::get_camera_transformation() {
-    return std::pair<glm::vec3, glm::vec3>(transformData.rgbPos[frameIndex], transformData.rgbRot[frameIndex]);
-}
-*/

@@ -7,6 +7,10 @@
 #include <stb_image_write.h>
 #include "helpers.h"
 #include <filesystem>
+#include <glm/gtx/transform.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+
 namespace fs = std::filesystem;
 
 
@@ -31,9 +35,18 @@ BoundingBox calculateBoundingBox_color(const Pointcloud& pcl, const glm::vec3& c
             if (p.z < bb.min_z) bb.min_z = p.z;
         }
     }
+    //glm::vec3 point1 = pcl.model * pcl.rotationMatrix * glm::vec4(bb.min_x, bb.min_y, bb.min_z, 1);
+    //bb.min_x = point1.x; bb.min_y = point1.y; bb.min_z = point1.z;
+
+    //glm::vec3 point2 = pcl.model * pcl.rotationMatrix * glm::vec4(bb.max_x, bb.max_y, bb.max_z, 1);
+    //bb.max_x = point2.x; bb.max_y = point2.y; bb.max_z = point2.z;
+    bb.translationMatrix = pcl.translationMatrix;
+    bb.rotationMatrix = pcl.rotationMatrix;
+
     bb.area = (bb.max_x - bb.min_x) * (bb.max_y - bb.min_y) * (bb.max_z - bb.min_z);
     return bb;
 }
+/*
 BoundingBox calculateBoundingBox(const Pointcloud& pcl) {
     //Find bounding box of the blue area
     BoundingBox bb;
@@ -55,6 +68,7 @@ BoundingBox calculateBoundingBox(const Pointcloud& pcl) {
     return bb;
 }
 
+*/
 
 void saveImage(const char* filepath, GLFWwindow* w){
     int width, height;

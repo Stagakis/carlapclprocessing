@@ -19,6 +19,8 @@ struct BoundingBox {
     float min_x, min_y, min_z;
     float max_x, max_y, max_z;
     float area;
+    glm::mat4 translationMatrix;
+    glm::mat4 rotationMatrix;
 };
 
 BoundingBox calculateBoundingBox_color(const Pointcloud& pcl, const glm::vec3& color);

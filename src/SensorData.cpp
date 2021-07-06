@@ -38,7 +38,8 @@ SensorData::SensorData(std::string resources_folder) {
     steeringData = SteeringParser(resources_folder + "steering_true.txt");
 
 #ifndef WINDOWS
-    std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
+    ///std::vector<std::string> files = glob(resources_folder + "*_saliency_segmentation.obj");
+    std::vector<std::string> files = glob(resources_folder + "*.ply");
     std::vector<std::string> image_files = glob(resources_folder + "*.png");
 #else
     std::vector<std::string> files = glob(resources_folder, ".obj");
