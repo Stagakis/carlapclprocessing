@@ -1,5 +1,5 @@
 # Scope
-This repo is our pointcloud visualization framework on RGB images. The poinvloud is color coded for identifying saliency regions and the code for the classifications is in this repo https://github.com/Stagakis/saliency-from-pointcloud. This work is part of our research on driver awareness using AR displays. Both the pointcloud and the image are generated from CARLA. Right now it is operated offline, but plans for online implementation are on the roadmap. 
+This repo is our pointcloud visualization framework on RGB images. The pointcloud is color coded for identifying saliency regions and the code for the classifications is in this repo https://github.com/Stagakis/saliency-from-pointcloud. This work is part of our research on driver awareness using AR displays. Both the pointcloud and the image are generated from CARLA. Right now it is operated offline, but plans for online implementation are on the roadmap. 
 
 # Resources
 
